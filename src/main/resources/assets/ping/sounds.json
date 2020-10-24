@@ -1,0 +1,8 @@
+{
+    "bloop": {
+        "sounds": [
+            "ping:bloop"
+        ],
+        "subtitle": "ping.subtitle.bloop"
+    }
+}

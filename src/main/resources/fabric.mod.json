@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "ping",
+  "version": "${version}",
+  "name": "Ping",
+  "description": "",
+  "authors": [
+    "FlashyReese",
+    "Girafi"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/ping/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "me.flashyreese.mods.ping.client.PingClientMod"
+    ],
+    "main": [
+      "me.flashyreese.mods.ping.PingMod"
+    ]
+  },
+  "mixins": [
+    "ping.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.10.3+build.211",
+    "fabric": "*",
+    "minecraft": "1.16.3"
+  }
+}

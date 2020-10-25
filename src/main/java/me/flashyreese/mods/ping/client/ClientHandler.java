@@ -1,11 +1,16 @@
 package me.flashyreese.mods.ping.client;
 
+import io.netty.buffer.Unpooled;
+import me.flashyreese.mods.ping.PingMod;
 import me.flashyreese.mods.ping.data.PingType;
+import me.flashyreese.mods.ping.data.PingWrapper;
+import me.flashyreese.mods.ping.network.packet.ServerBroadcastPing;
 import me.flashyreese.mods.ping.util.Config;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 
@@ -21,8 +26,11 @@ public class ClientHandler {
     }
 
     private static void sendPing(BlockHitResult raytrace, int color, PingType type) {
-        //PacketHandler.CHANNEL.sendToServer(new ClientSendPing(new PingWrapper(raytrace.getPos(), color, type)));
-        ClientSidePacketRegistry.INSTANCE.sendToServer(null);
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        PingWrapper wrapper = new PingWrapper(raytrace.getBlockPos(), color, type);
+        wrapper.writeToBuffer(buf);
+        ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.PING_HIGHLIGHT_ID, buf);
+        PingHandler.INSTANCE.onPingPacket(new ServerBroadcastPing(wrapper));
     }
 
     private static BlockHitResult raytrace(PlayerEntity player, double distance) {

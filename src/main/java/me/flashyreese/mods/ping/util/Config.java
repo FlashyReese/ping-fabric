@@ -5,9 +5,9 @@ public class Config {
     public static final Visual VISUAL = new Visual();
 
     public static class General {
-        public double pingAcceptDistance;
-        public int pingDuration;
-        public boolean sound;
+        public double pingAcceptDistance = 64;
+        public int pingDuration = 125;
+        public boolean sound = true;
 
         /*General(ForgeConfigSpec.Builder builder) {
             builder.push("general");
@@ -28,11 +28,11 @@ public class Config {
     }
 
     public static class Visual {
-        public int pingR;
-        public int pingG;
-        public int pingB;
-        public boolean blockOverlay;
-        public boolean menuBackground;
+        public int pingR = 255;
+        public int pingG = 0;
+        public int pingB = 0;
+        public boolean blockOverlay = true;
+        public boolean menuBackground = true;
 
         /*Visual(ForgeConfigSpec.Builder builder) {
             builder.push("visual");

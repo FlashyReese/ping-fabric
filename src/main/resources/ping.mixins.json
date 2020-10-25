@@ -4,11 +4,12 @@
   "package": "me.flashyreese.mods.ping.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MatrixStackAccess"
+    "MatrixStackAccess",
   ],
   "client": [
     "MixinInGameHud",
-    "MixinMinecraftClient"
+    "MixinMinecraftClient",
+    "MixinGameRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

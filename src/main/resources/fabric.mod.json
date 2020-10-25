@@ -14,7 +14,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "me.flashyreese.mods.ping.client.PingClientMod"
+      "me.flashyreese.mods.ping.PingMod"
     ],
     "main": [
       "me.flashyreese.mods.ping.PingMod"

@@ -12,7 +12,7 @@ import net.minecraft.util.math.Matrix4f;
 
 public class PingRenderHelper {
 
-    public static void drawBlockOverlay(float width, float height, float length, MatrixStack matrixStack, Sprite icon, int color, int alpha) {
+    public static void drawBlockOverlay(float width, float height, float length, MatrixStack matrixStack, Sprite sprite, int color, int alpha) {
         MatrixStack.Entry matrixEntry = ((MatrixStackAccess) matrixStack).getStack().getLast();
         Matrix4f posMatrix = matrixEntry.getModel();
         RenderLayer pingOverlay = PingRenderType.getPingOverlay();
@@ -24,40 +24,40 @@ public class PingRenderHelper {
         int b = color & 255;
 
         // TOP
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), -(length / 2), icon.getMinU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), -(length / 2), icon.getMaxU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), (length / 2), icon.getMaxU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), (length / 2), icon.getMinU(), icon.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), -(length / 2), sprite.getMinU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), -(length / 2), sprite.getMaxU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), (length / 2), sprite.getMaxU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), (length / 2), sprite.getMinU(), sprite.getMaxV(), r, g, b, alpha);
 
         // BOTTOM
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), (length / 2), icon.getMinU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), (length / 2), icon.getMaxU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), -(length / 2), icon.getMaxU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), -(length / 2), icon.getMinU(), icon.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), (length / 2), sprite.getMinU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), (length / 2), sprite.getMaxU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), -(length / 2), sprite.getMaxU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), -(length / 2), sprite.getMinU(), sprite.getMinV(), r, g, b, alpha);
 
         // NORTH
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), (length / 2), icon.getMinU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), (length / 2), icon.getMaxU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), (length / 2), icon.getMaxU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), (length / 2), icon.getMinU(), icon.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), (length / 2), sprite.getMinU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), (length / 2), sprite.getMaxU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), (length / 2), sprite.getMaxU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), (length / 2), sprite.getMinU(), sprite.getMinV(), r, g, b, alpha);
 
         // SOUTH
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), -(length / 2), icon.getMinU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), -(length / 2), icon.getMaxU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), -(length / 2), icon.getMaxU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), -(length / 2), icon.getMinU(), icon.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), -(length / 2), sprite.getMinU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), -(length / 2), sprite.getMaxU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), -(length / 2), sprite.getMaxU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), -(length / 2), sprite.getMinU(), sprite.getMaxV(), r, g, b, alpha);
 
         // EAST
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), -(length / 2), icon.getMinU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), (length / 2), icon.getMaxU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), (length / 2), icon.getMaxU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), -(length / 2), icon.getMinU(), icon.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), -(length / 2), sprite.getMinU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), (height / 2), (length / 2), sprite.getMaxU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), (length / 2), sprite.getMaxU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, -(width / 2), -(height / 2), -(length / 2), sprite.getMinU(), sprite.getMinV(), r, g, b, alpha);
 
         // WEST
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), -(length / 2), icon.getMinU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), (length / 2), icon.getMaxU(), icon.getMinV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), (length / 2), icon.getMaxU(), icon.getMaxV(), r, g, b, alpha);
-        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), -(length / 2), icon.getMinU(), icon.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), -(length / 2), sprite.getMinU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), -(height / 2), (length / 2), sprite.getMaxU(), sprite.getMinV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), (length / 2), sprite.getMaxU(), sprite.getMaxV(), r, g, b, alpha);
+        VertexHelper.renderPosTexColor(vertexBuilder, posMatrix, (width / 2), (height / 2), -(length / 2), sprite.getMinU(), sprite.getMaxV(), r, g, b, alpha);
         buffer.draw(pingOverlay);
     }
 }

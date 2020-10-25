@@ -18,11 +18,7 @@ public class KeyHandler {
     private static boolean lastKeyState = false;
     public static boolean ignoreNextRelease = false;
 
-    public static void onClientTick(/*TickEvent.ClientTickEvent event*/) {
-        /*if (event.phase == TickEvent.Phase.END) {
-            return;
-        }*/
-
+    public static void onClientTick() {
         MinecraftClient mc = MinecraftClient.getInstance();
 
         if (mc.world == null) {

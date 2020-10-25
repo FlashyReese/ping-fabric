@@ -4,13 +4,13 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class GLUUtils {
-    public static boolean gluProject(float objx, float objy, float objz, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport, FloatBuffer win_pos) {
+    public static boolean gluProject(float objectX, float objectY, float objectZ, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport, FloatBuffer winPos) {
         float[] in = new float[4];
         float[] out = new float[4];
 
-        in[0] = objx;
-        in[1] = objy;
-        in[2] = objz;
+        in[0] = objectX;
+        in[1] = objectY;
+        in[2] = objectZ;
         in[3] = 1.0f;
 
         gluMultMatrixVecf(modelMatrix, in, out);
@@ -28,9 +28,9 @@ public class GLUUtils {
         in[2] = in[2] * in[3] + 0.5f;
 
         // Map x,y to viewport
-        win_pos.put(0, in[0] * viewport.get(viewport.position() + 2) + viewport.get(viewport.position()));
-        win_pos.put(1, in[1] * viewport.get(viewport.position() + 3) + viewport.get(viewport.position() + 1));
-        win_pos.put(2, in[2]);
+        winPos.put(0, in[0] * viewport.get(viewport.position() + 2) + viewport.get(viewport.position()));
+        winPos.put(1, in[1] * viewport.get(viewport.position() + 3) + viewport.get(viewport.position() + 1));
+        winPos.put(2, in[2]);
         return true;
     }
 

@@ -1,8 +1,8 @@
 package me.flashyreese.mods.ping.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.flashyreese.mods.ping.PingMod;
 import me.flashyreese.mods.ping.data.PingType;
-import me.flashyreese.mods.ping.util.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
@@ -21,7 +21,7 @@ public class RenderHandler {
         BufferBuilder bufferBuilder = tessellator.getBuffer();
 
         // Menu Background
-        if (Config.VISUAL.menuBackground) {
+        if (PingMod.config().VISUAL.menuBackground) {
             RenderSystem.pushMatrix();
             RenderSystem.disableTexture();
             RenderSystem.enableBlend();
@@ -70,9 +70,9 @@ public class RenderHandler {
             // Button Background
             bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
             if (mouseIn) {
-                r = Config.VISUAL.pingR;
-                g = Config.VISUAL.pingG;
-                b = Config.VISUAL.pingB;
+                r = PingMod.config().VISUAL.pingR;
+                g = PingMod.config().VISUAL.pingG;
+                b = PingMod.config().VISUAL.pingB;
             }
             bufferBuilder.vertex(drawX + min, drawY + max, 0).texture(PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV()).color(r, g, b, 255).next();
             bufferBuilder.vertex(drawX + max, drawY + max, 0).texture(PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV()).color(r, g, b, 255).next();

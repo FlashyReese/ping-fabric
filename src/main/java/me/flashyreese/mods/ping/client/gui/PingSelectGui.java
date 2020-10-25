@@ -35,10 +35,10 @@ public class PingSelectGui extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        int numOfItems = PingType.values().length - 1;
+        int items = PingType.values().length - 1;
 
-        int half = numOfItems / 2;
-        for (int i = 0; i < numOfItems; i++) {
+        int half = items / 2;
+        for (int i = 0; i < items; i++) {
             PingType type = PingType.values()[i + 1];
             int drawX = mc.getWindow().getScaledWidth() / 2 - (ITEM_SIZE * half) - (ITEM_PADDING * (half));
             int drawY = mc.getWindow().getScaledHeight() / 4;

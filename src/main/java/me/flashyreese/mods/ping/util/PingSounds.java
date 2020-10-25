@@ -13,14 +13,7 @@ public class PingSounds {
     private static SoundEvent createSound(String name) {
         Identifier resourceLocation = new Identifier("ping", name);
         SoundEvent sound = new SoundEvent(resourceLocation);
-        //sound.setRegistryName(resourceLocation);
         SOUNDS.add(sound);
         return sound;
     }
-
-    /*public static void registerSound(RegistryEvent.Register<SoundEvent> event) {
-        for (SoundEvent sound : SOUNDS) {
-            event.getRegistry().register(sound);
-        }
-    }*/
 }

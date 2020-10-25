@@ -26,7 +26,7 @@ public class MixinInGameHud {
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/SubtitlesHud;render(Lnet/minecraft/client/util/math/MatrixStack;)V", shift = At.Shift.BEFORE))
-    public void preSubtitlesHud(MatrixStack matrices, float tickDelta, CallbackInfo callbackInfo){
+    public void preSubtitlesHud(MatrixStack matrices, float tickDelta, CallbackInfo callbackInfo) {
         PingHandler.renderPingOffscreen(matrices, tickDelta);
     }
 }

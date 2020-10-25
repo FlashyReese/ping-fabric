@@ -1,0 +1,22 @@
+{
+  "ping:key.categories.ping": "Ping",
+  "key.ping": "Ping Seçim Menüsünü Aç",
+  "ping.key.alert": "Ping (Alarm)",
+  "ping.key.break": "Ping (Kaz)",
+  "ping.key.look": "Ping (Bak)",
+  "ping.key.goto": "Ping (Buraya Gel)",
+  "ping.key.attack": "Ping (Saldır)",
+  "ping.subtitle.bloop": "Ping biplendi",
+  "ping.pingSelect.title": "Ping Seçimi",
+  "ping.config.title": "Ping Ayarları",
+  "category.ping.general": "Genel",
+  "ping.config.ping_accept_distance": "Geçerli Ping Menzili",
+  "ping.config.ping_duration": "Ping Süresi",
+  "ping.config.ping_sound": "Ses",
+  "category.ping.visual": "Görsel",
+  "ping.config.ping_red": "Kırmızı (R)",
+  "ping.config.ping_green": "Yeşil (G)",
+  "ping.config.ping_blue": "Mavi (B)",
+  "ping.config.block_overlay": "Blok Göstergesi"
+}
+

@@ -3,19 +3,20 @@ package me.flashyreese.mods.ping.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.flashyreese.mods.ping.PingMod;
 import me.flashyreese.mods.ping.client.PingHandler;
+import me.flashyreese.mods.ping.client.util.AngleHelper;
 import me.flashyreese.mods.ping.data.PingType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.TranslatableText;
+import org.lwjgl.opengl.GL11;
 
 public class PingSelectScreen extends Screen {
-
-    public final int ITEM_PADDING = 10;
     public final int ITEM_SIZE = 32;
 
     public PingSelectScreen() {
@@ -24,77 +25,73 @@ public class PingSelectScreen extends Screen {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderGui();
-        this.renderText(matrices);
+        this.renderGui(matrices, mouseX, mouseY);
     }
 
-    public void renderGui() {
-        int numOfItems = PingType.values().length - 1;
+    private void renderGui(MatrixStack matrixStack, int mouseX, int mouseY) {
+        int outerRadius = 75;
+        int innerRadius = 25;
 
-        MinecraftClient mc = MinecraftClient.getInstance();
+        int pingTypes = PingType.values().length - 1;
+
+        int centerX = this.client.getWindow().getScaledWidth() / 2;
+        int centerY = this.client.getWindow().getScaledHeight() / 2;
+        this.client.textRenderer.draw(matrixStack, this.title, centerX - this.client.textRenderer.getWidth(this.title) / 2.0F, centerY - outerRadius - 20, 0xFFFFFF);
+
+        int degrees = (int) (360.0D / pingTypes);
+
+        int offset = 180 - degrees / 2;
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
 
-        // Menu Background
-        if (PingMod.config().VISUAL.menuBackground) {
-            RenderSystem.pushMatrix();
-            RenderSystem.disableTexture();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-
-            int halfWidth = (ITEM_SIZE * (numOfItems)) - (ITEM_PADDING * (numOfItems));
-            int halfHeight = (ITEM_SIZE + ITEM_PADDING) / 2;
-            int backgroundX = mc.getWindow().getScaledWidth() / 2 - halfWidth;
-            int backgroundY = mc.getWindow().getScaledHeight() / 4 - halfHeight;
-
-            bufferBuilder.begin(7, VertexFormats.POSITION_COLOR);
-            bufferBuilder.vertex(backgroundX, backgroundY + 15 + halfHeight * 2, 0).color(0F, 0F, 0F, 0.5F).next();
-            bufferBuilder.vertex(backgroundX + halfWidth * 2, backgroundY + 15 + halfHeight * 2, 0).color(0F, 0F, 0F, 0.5F).next();
-            bufferBuilder.vertex(backgroundX + halfWidth * 2, backgroundY, 0).color(0F, 0F, 0F, 0.5F).next();
-            bufferBuilder.vertex(backgroundX, backgroundY, 0).color(0F, 0F, 0F, 0.5F).next();
-            tessellator.draw();
-
-            RenderSystem.disableBlend();
-            RenderSystem.enableTexture();
-            RenderSystem.popMatrix();
-        }
-
-        MinecraftClient.getInstance().getTextureManager().bindTexture(PingHandler.TEXTURE);
-
-        final double mouseX = mc.mouse.getX() * ((double) mc.getWindow().getScaledWidth() / mc.getWindow().getWidth());
-        final double mouseY = mc.mouse.getY() * ((double) mc.getWindow().getScaledHeight() / mc.getWindow().getHeight());
-
-        int half = numOfItems / 2;
-        for (int i = 0; i < numOfItems; i++) {
+        double mouseAngle = AngleHelper.getMouseAngle();
+        mouseAngle -= degrees / 2;
+        mouseAngle = 360 + mouseAngle + degrees;
+        mouseAngle = AngleHelper.correctAngle(mouseAngle);
+        for (int i = 0; i < pingTypes; i++) {
             PingType type = PingType.values()[i + 1];
-            int drawX = mc.getWindow().getScaledWidth() / 2 - (ITEM_SIZE * half) - (ITEM_PADDING * (half));
-            int drawY = mc.getWindow().getScaledHeight() / 4;
+            double currAngle = degrees * i;
+            double nextAngle = currAngle + degrees;
+            currAngle = AngleHelper.correctAngle(currAngle);
+            nextAngle = AngleHelper.correctAngle(nextAngle);
+            mouseAngle = AngleHelper.correctAngle(mouseAngle);
 
-            drawX += ITEM_SIZE / 2 + ITEM_PADDING / 2 + (ITEM_PADDING * i) + ITEM_SIZE * i;
+            boolean mouseIn = mouseAngle > currAngle && mouseAngle < nextAngle;
 
-            boolean mouseIn = mouseX >= (drawX - ITEM_SIZE * 0.5D) && mouseX <= (drawX + ITEM_SIZE * 0.5D) &&
-                    mouseY >= (drawY - ITEM_SIZE * 0.5D) && mouseY <= (drawY + ITEM_SIZE * 0.5D);
+            boolean isHovered = !isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
+                    && isInsideCircle(mouseX, mouseY, centerX, centerY, 75)
+                    && mouseIn;
+            if (isHovered) {
+                this.drawDoughnutSegment(matrixStack, offset, offset + degrees / 2, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
+                this.drawDoughnutSegment(matrixStack, offset + degrees / 2, offset + degrees, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
+            } else {
+                this.drawDoughnutSegment(matrixStack, offset, offset + degrees / 2, centerX, centerY, outerRadius, innerRadius, 0x90000000);
+                this.drawDoughnutSegment(matrixStack, offset + degrees / 2, offset + degrees, centerX, centerY, outerRadius, innerRadius, 0x90000000);
+            }
+
+            //Fixme: fix algorithm
+            double drawX = centerX;
+            double drawY = centerY;
+
+            if (i == 0) {
+                drawY -= 50;
+            } else if (i == 1) {
+                drawX -= 50;
+            } else if (i == 2) {
+                drawY += 50;
+            } else if (i == 3) {
+                drawX += 50;
+            }
+
 
             float min = -ITEM_SIZE / 2.0F;
             float max = ITEM_SIZE / 2.0F;
 
-            int r = 255;
-            int g = 255;
-            int b = 255;
+            matrixStack.push();
+            RenderSystem.enableBlend();
 
-            // Button Background
-            bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
-            if (mouseIn) {
-                r = PingMod.config().VISUAL.pingR;
-                g = PingMod.config().VISUAL.pingG;
-                b = PingMod.config().VISUAL.pingB;
-            }
-            bufferBuilder.vertex(drawX + min, drawY + max, 0).texture(PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV()).color(r, g, b, 255).next();
-            bufferBuilder.vertex(drawX + max, drawY + max, 0).texture(PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV()).color(r, g, b, 255).next();
-            bufferBuilder.vertex(drawX + max, drawY + min, 0).texture(PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV()).color(r, g, b, 255).next();
-            bufferBuilder.vertex(drawX + min, drawY + min, 0).texture(PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV()).color(r, g, b, 255).next();
-            tessellator.draw();
-
+            MinecraftClient.getInstance().getTextureManager().bindTexture(PingHandler.TEXTURE);
             // Button Icon
             bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
             bufferBuilder.vertex(drawX + min, drawY + max, 0).texture(type.getMinU(), type.getMaxV()).color(255, 255, 255, 255).next();
@@ -102,36 +99,14 @@ public class PingSelectScreen extends Screen {
             bufferBuilder.vertex(drawX + max, drawY + min, 0).texture(type.getMaxU(), type.getMinV()).color(255, 255, 255, 255).next();
             bufferBuilder.vertex(drawX + min, drawY + min, 0).texture(type.getMinU(), type.getMinV()).color(255, 255, 255, 255).next();
             tessellator.draw();
-        }
-    }
+            RenderSystem.disableBlend();
+            matrixStack.pop();
 
-    public void renderText(MatrixStack matrixStack) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        int numOfItems = PingType.values().length - 1;
-
-        final double mouseX = mc.mouse.getX() * ((double) mc.getWindow().getScaledWidth() / mc.getWindow().getWidth());
-        final double mouseY = mc.mouse.getY() * ((double) mc.getWindow().getScaledHeight() / mc.getWindow().getHeight());
-
-        int halfHeight = (ITEM_SIZE + ITEM_PADDING) / 2;
-        int backgroundY = mc.getWindow().getScaledHeight() / 4 - halfHeight;
-
-        int half = numOfItems / 2;
-        for (int i = 0; i < numOfItems; i++) {
-            PingType type = PingType.values()[i + 1];
-            int drawX = mc.getWindow().getScaledWidth() / 2 - (ITEM_SIZE * half) - (ITEM_PADDING * (half));
-            int drawY = mc.getWindow().getScaledHeight() / 4;
-
-            drawX += ITEM_SIZE / 2 + ITEM_PADDING / 2 + (ITEM_PADDING * i) + ITEM_SIZE * i;
-
-            boolean mouseIn = mouseX >= (drawX - ITEM_SIZE * 0.5D) && mouseX <= (drawX + ITEM_SIZE * 0.5D) &&
-                    mouseY >= (drawY - ITEM_SIZE * 0.5D) && mouseY <= (drawY + ITEM_SIZE * 0.5D);
-
-            if (mouseIn) {
-                RenderSystem.pushMatrix();
-                RenderSystem.color4f(255, 255, 255, 255);
-                mc.textRenderer.drawWithShadow(matrixStack, type.toString(), mc.getWindow().getScaledWidth() / 2.0F - mc.textRenderer.getWidth(type.toString()) / 2.0F, backgroundY + halfHeight * 2, 0xFFFFFF);
-                RenderSystem.popMatrix();
+            if (isHovered) {
+                this.client.textRenderer.draw(matrixStack, type.toString(), centerX - this.client.textRenderer.getWidth(type.toString()) / 2.0F, centerY + outerRadius + 10, 0xFFFFFF);
             }
+
+            offset += degrees;
         }
     }
 
@@ -146,24 +121,40 @@ public class PingSelectScreen extends Screen {
         }
     }
 
+    boolean isInsideCircle(double mouseX, double mouseY, double centerX, double centerY, int radius) {
+        double distX = mouseX - centerX;
+        double distY = mouseY - centerY;
+        double distance = Math.sqrt((distX * distX) + (distY * distY));
+        return distance <= radius;
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int items = PingType.values().length - 1;
+        int centerX = this.client.getWindow().getScaledWidth() / 2;
+        int centerY = this.client.getWindow().getScaledHeight() / 2;
+        if (!isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
+                && isInsideCircle(mouseX, mouseY, centerX, centerY, 75)) {
+            int pingTypes = PingType.values().length - 1;
 
-        int half = items / 2;
-        for (int i = 0; i < items; i++) {
-            PingType type = PingType.values()[i + 1];
-            int drawX = this.client.getWindow().getScaledWidth() / 2 - (ITEM_SIZE * half) - (ITEM_PADDING * (half));
-            int drawY = this.client.getWindow().getScaledHeight() / 4;
+            int degrees = (int) (360.0D / pingTypes);
 
-            drawX += ITEM_SIZE / 2 + ITEM_PADDING / 2 + (ITEM_PADDING * i) + ITEM_SIZE * i;
+            double mouseAngle = AngleHelper.getMouseAngle();
+            mouseAngle -= degrees / 2;
+            mouseAngle = 360 + mouseAngle + degrees;
+            mouseAngle = AngleHelper.correctAngle(mouseAngle);
 
-            boolean mouseIn = mouseX >= (drawX - ITEM_SIZE * 0.5D) && mouseX <= (drawX + ITEM_SIZE * 0.5D) &&
-                    mouseY >= (drawY - ITEM_SIZE * 0.5D) && mouseY <= (drawY + ITEM_SIZE * 0.5D);
+            for (int i = 0; i < pingTypes; i++) {
+                PingType type = PingType.values()[i + 1];
+                double currAngle = degrees * i;
+                double nextAngle = currAngle + degrees;
+                currAngle = AngleHelper.correctAngle(currAngle);
+                nextAngle = AngleHelper.correctAngle(nextAngle);
+                mouseAngle = AngleHelper.correctAngle(mouseAngle);
 
-            if (mouseIn) {
-                PingMod.getClientHandler().sendPing(type);
-                return true;
+                boolean mouseIn = mouseAngle > currAngle && mouseAngle < nextAngle;
+                if (mouseIn) {
+                    PingMod.getClientHandler().sendPing(type);
+                }
             }
         }
         return false;
@@ -172,5 +163,34 @@ public class PingSelectScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+
+    public void drawDoughnutSegment(MatrixStack matrixStack, int startingAngle, int endingAngle, float centerX, float centerY, double outerRingRadius, double innerRingRadius, int color) {
+        float f = (float) (color >> 24 & 0xff) / 255F;
+        float f1 = (float) (color >> 16 & 0xff) / 255F;
+        float f2 = (float) (color >> 8 & 0xff) / 255F;
+        float f3 = (float) (color & 0xff) / 255F;
+        matrixStack.push();
+        RenderSystem.enableBlend();
+        RenderSystem.disableTexture();
+        RenderSystem.defaultBlendFunc();
+        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+        bufferBuilder.begin(GL11.GL_TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
+        for (int i = endingAngle; i >= startingAngle; i--) {
+            double x = Math.sin((i * Math.PI / 180)) * innerRingRadius;
+            double y = Math.cos((i * Math.PI / 180)) * innerRingRadius;
+            bufferBuilder.vertex(centerX + x, centerY + y, 0).color(f1, f2, f3, f).next();
+        }
+        for (int i = startingAngle; i <= endingAngle; i++) {
+            double x = Math.sin((i * Math.PI / 180)) * outerRingRadius;
+            double y = Math.cos((i * Math.PI / 180)) * outerRingRadius;
+            bufferBuilder.vertex(centerX + x, centerY + y, 0).color(f1, f2, f3, f).next();
+        }
+        bufferBuilder.end();
+        BufferRenderer.draw(bufferBuilder);
+        RenderSystem.enableTexture();
+        RenderSystem.disableBlend();
+        matrixStack.pop();
     }
 }

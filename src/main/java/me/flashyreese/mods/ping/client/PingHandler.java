@@ -20,9 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -38,13 +36,37 @@ public class PingHandler {
 
     public void onPingPacket(PingWrapper ping) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.player != null && MathHelper.sqrt(mc.player.squaredDistanceTo(ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ())) <= PingMod.config().GENERAL.pingAcceptDistance) {
-            if (PingMod.config().GENERAL.sound) {
-                mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ()));
+        if (ping.getBlockPos() != null) {
+            if (mc.player != null && MathHelper.sqrt(mc.player.squaredDistanceTo(ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ())) <= PingMod.config().GENERAL.pingAcceptDistance) {
+                if (PingMod.config().GENERAL.sound) {
+                    mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ()));
+                }
+                ping.setTimer(PingMod.config().GENERAL.pingDuration);
+                activePings.add(ping);
             }
-            ping.setTimer(PingMod.config().GENERAL.pingDuration);
-            activePings.add(ping);
+        } else {
+            if (mc.player != null) {
+                Entity entity = mc.player.world.getEntityById(ping.getEntityId());
+
+                if (entity != null) {
+                    Vec3d pos = entity.getPos();
+                    if (PingMod.config().GENERAL.sound) {
+                        mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, pos.getX(), pos.getY(), pos.getZ()));
+                    }
+                    ping.setTimer(PingMod.config().GENERAL.pingDuration);
+                    activePings.add(ping);
+                }
+            }
         }
+    }
+
+    public boolean hasOutline(Entity entity){
+        for (PingWrapper ping: activePings){
+            if (entity == MinecraftClient.getInstance().player.world.getEntityById(ping.getEntityId())){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void onRenderWorld(Camera camera, float tickDelta, long limitTime, MatrixStack matrix) {
@@ -72,13 +94,27 @@ public class PingHandler {
         frustum.setPosition(clipX, clipY, clipZ);
 
         for (PingWrapper ping : activePings) {
-            double px = ping.getBlockPos().getX() + 0.5D - staticPos.getX();
-            double py = ping.getBlockPos().getY() + 0.5D - staticPos.getY();
-            double pz = ping.getBlockPos().getZ() + 0.5D - staticPos.getZ();
-
-            if (frustum.isVisible(ping.getBox())) {
+            double px;
+            double py;
+            double pz;
+            //fixme: temp fix for now
+            Entity entity = mc.player.world.getEntityById(ping.getEntityId());
+            Box box = null;
+            if (ping.getBlockPos() == null) {
+                if (entity == null) continue;
+                px = entity.getPos().getX() + 0.5D - staticPos.getX();
+                py = entity.getPos().getY() + 0.5D - staticPos.getX();
+                pz = entity.getPos().getZ() + 0.5D - staticPos.getX();
+                box = Box.method_29968(entity.getPos());
+            }else{
+                px = ping.getBlockPos().getX() + 0.5D - staticPos.getX();
+                py = ping.getBlockPos().getY() + 0.5D - staticPos.getY();
+                pz = ping.getBlockPos().getZ() + 0.5D - staticPos.getZ();
+                box = ping.getBox();
+            }
+            if (frustum.isVisible(box)) {
                 ping.setOffscreen(false);
-                if (PingMod.config().VISUAL.blockOverlay) {
+                if (PingMod.config().VISUAL.blockOverlay && ping.getBlockPos() != null) {
                     renderPingOverlay(ping.getBlockPos().getX() - staticPos.getX(), ping.getBlockPos().getY() - staticPos.getY(), ping.getBlockPos().getZ() - staticPos.getZ(), matrix, ping);
                 }
                 renderPing(px, py, pz, matrix, cameraEntity, ping);
@@ -92,6 +128,8 @@ public class PingHandler {
     public void renderPingOffscreen(MatrixStack matrices, float tickDelta) {
         MinecraftClient mc = MinecraftClient.getInstance();
         for (PingWrapper ping : activePings) {
+            //if (ping.getBlockPos() == null) continue;
+
             if (!ping.isOffscreen() || mc.currentScreen != null || mc.options.debugEnabled) {
                 continue;
             }

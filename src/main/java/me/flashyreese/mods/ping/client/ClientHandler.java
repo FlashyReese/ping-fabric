@@ -9,13 +9,16 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
+import java.util.Optional;
 
 public class ClientHandler {
     private final String PING_CATEGORY = "ping:key.categories.ping";
@@ -27,15 +30,27 @@ public class ClientHandler {
 
 
     public void sendPing(PingType type) {
-        BlockHitResult raycastResult = raycast(MinecraftClient.getInstance().player, 50);
-        if (raycastResult.getType() == HitResult.Type.BLOCK) {
-            sendPing(raycastResult, new Color(PingMod.config().VISUAL.pingR, PingMod.config().VISUAL.pingG, PingMod.config().VISUAL.pingB).getRGB(), type);
+        Optional<Entity> optional = DebugRenderer.getTargetedEntity(MinecraftClient.getInstance().cameraEntity, (int) PingMod.config().GENERAL.pingAcceptDistance);
+        if (optional.isPresent()) {
+            sendPing(optional.get().getEntityId(), new Color(PingMod.config().VISUAL.pingR, PingMod.config().VISUAL.pingG, PingMod.config().VISUAL.pingB).getRGB(), type);
+        } else {
+            BlockHitResult raycastResult = raycast(MinecraftClient.getInstance().player, PingMod.config().GENERAL.pingAcceptDistance);
+            if (raycastResult.getType() == HitResult.Type.BLOCK) {
+                sendPing(raycastResult, new Color(PingMod.config().VISUAL.pingR, PingMod.config().VISUAL.pingG, PingMod.config().VISUAL.pingB).getRGB(), type);
+            }
         }
+
     }
 
     private void sendPing(BlockHitResult raytrace, int color, PingType type) {
         if (ClientSidePacketRegistry.INSTANCE.canServerReceive(PingMod.getPacketHandler().PING_HIGHLIGHT_ID)) {
             ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.getPacketHandler().PING_HIGHLIGHT_ID, new PingWrapper(raytrace.getBlockPos(), color, type).getPacketByteBuf());
+        }
+    }
+
+    private void sendPing(int entityID, int color, PingType type) {
+        if (ClientSidePacketRegistry.INSTANCE.canServerReceive(PingMod.getPacketHandler().PING_HIGHLIGHT_ID)) {
+            ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.getPacketHandler().PING_HIGHLIGHT_ID, new PingWrapper(entityID, color, type).getPacketByteBuf());
         }
     }
 

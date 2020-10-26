@@ -7,7 +7,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 
 public class PingWrapper {
-    private final BlockPos blockPos;
+    private BlockPos blockPos;
+    private int entityId = -1;
     private final int color;
     private final PingType type;
     //public final long uuid;
@@ -23,19 +24,40 @@ public class PingWrapper {
         this.color = color;
         this.type = type;
         this.packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-        this.writeToBuffer(packetByteBuf);
+        this.writeToBuffer(packetByteBuf, true);
     }
 
-    private void writeToBuffer(ByteBuf buffer) {
-        buffer.writeInt(this.blockPos.getX());
-        buffer.writeInt(this.blockPos.getY());
-        buffer.writeInt(this.blockPos.getZ());
+    public PingWrapper(int entityId, int color, PingType type){
+        this.entityId = entityId;
+        this.color = color;
+        this.type = type;
+        this.packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+        this.writeToBuffer(packetByteBuf, false);
+    }
+
+    private void writeToBuffer(ByteBuf buffer, boolean isBlock) {
+        buffer.writeBoolean(isBlock);
+        if (isBlock){
+            buffer.writeInt(this.blockPos.getX());
+            buffer.writeInt(this.blockPos.getY());
+            buffer.writeInt(this.blockPos.getZ());
+        }else{
+            buffer.writeInt(this.entityId);
+        }
         buffer.writeInt(this.color);
         buffer.writeInt(this.type.ordinal());
     }
 
     public BlockPos getBlockPos() {
         return blockPos;
+    }
+
+    public void setBlockPos(BlockPos blockPos) {
+        this.blockPos = blockPos;
+    }
+
+    public int getEntityId() {
+        return entityId;
     }
 
     public int getColor() {
@@ -95,11 +117,20 @@ public class PingWrapper {
     }
 
     public static PingWrapper of(ByteBuf buffer) {
-        int x = buffer.readInt();
-        int y = buffer.readInt();
-        int z = buffer.readInt();
+        boolean isBlock = buffer.readBoolean();
+        int x = -1;
+        int y = -1;
+        int z = -1;
+        int entityId = -1;
+        if (isBlock){
+            x = buffer.readInt();
+            y = buffer.readInt();
+            z = buffer.readInt();
+        }else{
+            entityId = buffer.readInt();
+        }
         int color = buffer.readInt();
         PingType type = PingType.values()[buffer.readInt()];
-        return new PingWrapper(new BlockPos(x, y, z), color, type);
+        return isBlock ? new PingWrapper(new BlockPos(x, y, z), color, type) : new PingWrapper(entityId, color, type);
     }
 }

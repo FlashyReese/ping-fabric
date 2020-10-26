@@ -16,7 +16,7 @@ public class PingWrapper {
     private float screenY;
     private int animationTimer = 20;
     private int timer;
-    private PacketByteBuf packetByteBuf;
+    private final PacketByteBuf packetByteBuf;
 
     public PingWrapper(BlockPos pos, int color, PingType type) {
         this.blockPos = pos;
@@ -88,10 +88,6 @@ public class PingWrapper {
 
     public PacketByteBuf getPacketByteBuf() {
         return packetByteBuf;
-    }
-
-    public void setPacketByteBuf(PacketByteBuf packetByteBuf) {
-        this.packetByteBuf = packetByteBuf;
     }
 
     public Box getBox() {

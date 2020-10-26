@@ -33,8 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PingHandler {
-
-    public static final PingHandler INSTANCE = new PingHandler();
     public static final Identifier TEXTURE = new Identifier("ping", "textures/ping.png");
     private static List<PingWrapper> activePings = new ArrayList<>();
 
@@ -49,7 +47,7 @@ public class PingHandler {
         }
     }
 
-    public static void onRenderWorld(Camera camera, float tickDelta, long limitTime, MatrixStack matrix) {
+    public void onRenderWorld(Camera camera, float tickDelta, long limitTime, MatrixStack matrix) {
         MinecraftClient mc = MinecraftClient.getInstance();
         Entity cameraEntity = mc.getCameraEntity();
         if (cameraEntity == null || activePings.isEmpty()) return;
@@ -91,7 +89,7 @@ public class PingHandler {
         }
     }
 
-    public static void renderPingOffscreen(MatrixStack matrices, float tickDelta) {
+    public void renderPingOffscreen(MatrixStack matrices, float tickDelta) {
         MinecraftClient mc = MinecraftClient.getInstance();
         for (PingWrapper ping : activePings) {
             if (!ping.isOffscreen() || mc.currentScreen != null || mc.options.debugEnabled) {
@@ -173,7 +171,7 @@ public class PingHandler {
         }
     }
 
-    public static void onClientTick() {
+    public void onClientTick() {
         Iterator<PingWrapper> iterator = activePings.iterator();
         while (iterator.hasNext()) {
             PingWrapper pingWrapper = iterator.next();
@@ -188,7 +186,7 @@ public class PingHandler {
         }
     }
 
-    private static void renderPing(double px, double py, double pz, MatrixStack matrixStack, Entity renderEntity, PingWrapper ping) {
+    private void renderPing(double px, double py, double pz, MatrixStack matrixStack, Entity renderEntity, PingWrapper ping) {
         MinecraftClient mc = MinecraftClient.getInstance();
         matrixStack.push();
         matrixStack.translate(px, py, pz);
@@ -225,7 +223,7 @@ public class PingHandler {
         matrixStack.pop();
     }
 
-    private static void renderPingOverlay(double x, double y, double z, MatrixStack matrixStack, PingWrapper ping) {
+    private void renderPingOverlay(double x, double y, double z, MatrixStack matrixStack, PingWrapper ping) {
         Sprite icon = MinecraftClient.getInstance().getItemRenderer().getModels().getModel(new ItemStack(Blocks.WHITE_STAINED_GLASS)).getSprite();
         float padding = 0F + (0.20F * (float) ping.getAnimationTimer() / (float) 20);
         float box = 1 + padding + padding;
@@ -238,7 +236,7 @@ public class PingHandler {
         matrixStack.pop();
     }
 
-    private static void translatePingCoordinates(double px, double py, double pz, PingWrapper ping) {
+    private void translatePingCoordinates(double px, double py, double pz, PingWrapper ping) {
         FloatBuffer screenCoords = BufferUtils.createFloatBuffer(4);
         IntBuffer viewport = BufferUtils.createIntBuffer(16);
         FloatBuffer modelView = BufferUtils.createFloatBuffer(16);

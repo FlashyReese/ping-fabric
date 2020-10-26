@@ -23,7 +23,7 @@ public class PingClientModConfig {
 
         public General() {
             this.pingAcceptDistance = 64;
-            this.pingDuration = 250;
+            this.pingDuration = 60;
             this.sound = true;
         }
     }

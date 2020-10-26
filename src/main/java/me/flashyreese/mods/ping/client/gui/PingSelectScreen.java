@@ -1,19 +1,34 @@
-package me.flashyreese.mods.ping.client;
+package me.flashyreese.mods.ping.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.flashyreese.mods.ping.PingMod;
+import me.flashyreese.mods.ping.client.PingHandler;
 import me.flashyreese.mods.ping.data.PingType;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
 
-public class RenderHandler {
-    public static final int ITEM_PADDING = 10;
-    public static final int ITEM_SIZE = 32;
+public class PingSelectScreen extends Screen {
 
-    public static void renderGui() {
+    public final int ITEM_PADDING = 10;
+    public final int ITEM_SIZE = 32;
+
+    public PingSelectScreen() {
+        super(new TranslatableText("ping.pingSelect.title"));
+    }
+
+    @Override
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        this.renderGui();
+        this.renderText(matrices);
+    }
+
+    public void renderGui() {
         int numOfItems = PingType.values().length - 1;
 
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -25,7 +40,7 @@ public class RenderHandler {
             RenderSystem.pushMatrix();
             RenderSystem.disableTexture();
             RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(770, 771, 1, 0);
+            RenderSystem.defaultBlendFunc();
 
             int halfWidth = (ITEM_SIZE * (numOfItems)) - (ITEM_PADDING * (numOfItems));
             int halfHeight = (ITEM_SIZE + ITEM_PADDING) / 2;
@@ -90,7 +105,7 @@ public class RenderHandler {
         }
     }
 
-    public static void renderText(MatrixStack matrixStack) {
+    public void renderText(MatrixStack matrixStack) {
         MinecraftClient mc = MinecraftClient.getInstance();
         int numOfItems = PingType.values().length - 1;
 
@@ -118,5 +133,44 @@ public class RenderHandler {
                 RenderSystem.popMatrix();
             }
         }
+    }
+
+    @Override
+    public void tick() {
+        if (!(InputUtil.isKeyPressed(this.client.getWindow().getHandle(), PingMod.getClientHandler().KEY_BINDING.getDefaultKey().getCode()) || InputUtil.isKeyPressed(this.client.getWindow().getHandle(), PingMod.getClientHandler().KEY_BINDING.getDefaultKey().getCode() + 100))) {
+            final double mouseX = this.client.mouse.getX() * ((double) this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth());
+            final double mouseY = this.client.mouse.getY() * ((double) this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight());
+
+            this.mouseClicked(mouseX, mouseY, 0);
+            this.client.openScreen(null);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        int items = PingType.values().length - 1;
+
+        int half = items / 2;
+        for (int i = 0; i < items; i++) {
+            PingType type = PingType.values()[i + 1];
+            int drawX = this.client.getWindow().getScaledWidth() / 2 - (ITEM_SIZE * half) - (ITEM_PADDING * (half));
+            int drawY = this.client.getWindow().getScaledHeight() / 4;
+
+            drawX += ITEM_SIZE / 2 + ITEM_PADDING / 2 + (ITEM_PADDING * i) + ITEM_SIZE * i;
+
+            boolean mouseIn = mouseX >= (drawX - ITEM_SIZE * 0.5D) && mouseX <= (drawX + ITEM_SIZE * 0.5D) &&
+                    mouseY >= (drawY - ITEM_SIZE * 0.5D) && mouseY <= (drawY + ITEM_SIZE * 0.5D);
+
+            if (mouseIn) {
+                PingMod.getClientHandler().sendPing(type);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 }

@@ -39,50 +39,37 @@ public class PingSelectScreen extends Screen {
         this.client.textRenderer.draw(matrixStack, this.title, centerX - this.client.textRenderer.getWidth(this.title) / 2.0F, centerY - outerRadius - 20, 0xFFFFFF);
 
         int degrees = (int) (360.0D / pingTypes);
+        int currentAngle = 360 - degrees / 2;
+        int mouseAngle = (int) AngleHelper.getMouseAngle();
 
-        int offset = 180 - degrees / 2;
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-
-        double mouseAngle = AngleHelper.getMouseAngle();
-        mouseAngle -= degrees / 2;
-        mouseAngle = 360 + mouseAngle + degrees;
-        mouseAngle = AngleHelper.correctAngle(mouseAngle);
         for (int i = 0; i < pingTypes; i++) {
             PingType type = PingType.values()[i + 1];
-            double currAngle = degrees * i;
-            double nextAngle = currAngle + degrees;
-            currAngle = AngleHelper.correctAngle(currAngle);
-            nextAngle = AngleHelper.correctAngle(nextAngle);
-            mouseAngle = AngleHelper.correctAngle(mouseAngle);
+            int nextAngle = currentAngle + degrees;
+            nextAngle = (int) AngleHelper.correctAngle(nextAngle);
 
-            boolean mouseIn = mouseAngle > currAngle && mouseAngle < nextAngle;
+            boolean mouseIn = isAngleBetween(mouseAngle, currentAngle, nextAngle);
 
             boolean isHovered = !isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
                     && isInsideCircle(mouseX, mouseY, centerX, centerY, 75)
                     && mouseIn;
             if (isHovered) {
-                this.drawDoughnutSegment(matrixStack, offset, offset + degrees / 2, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
-                this.drawDoughnutSegment(matrixStack, offset + degrees / 2, offset + degrees, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
+                this.drawDoughnutSegment(matrixStack, currentAngle, currentAngle + degrees / 2, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
+                this.drawDoughnutSegment(matrixStack, currentAngle + degrees / 2, currentAngle + degrees, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
             } else {
-                this.drawDoughnutSegment(matrixStack, offset, offset + degrees / 2, centerX, centerY, outerRadius, innerRadius, 0x90000000);
-                this.drawDoughnutSegment(matrixStack, offset + degrees / 2, offset + degrees, centerX, centerY, outerRadius, innerRadius, 0x90000000);
+                this.drawDoughnutSegment(matrixStack, currentAngle, currentAngle + degrees / 2, centerX, centerY, outerRadius, innerRadius, 0x90000000);
+                this.drawDoughnutSegment(matrixStack, currentAngle + degrees / 2, currentAngle + degrees, centerX, centerY, outerRadius, innerRadius, 0x90000000);
             }
 
-            //Fixme: fix algorithm
             double drawX = centerX;
             double drawY = centerY;
 
-            if (i == 0) {
-                drawY -= 50;
-            } else if (i == 1) {
-                drawX -= 50;
-            } else if (i == 2) {
-                drawY += 50;
-            } else if (i == 3) {
-                drawX += 50;
-            }
+            double outerPointX = (isHovered ? outerRadius + 5 : outerRadius) * Math.sin(Math.toRadians(currentAngle + degrees * 0.5D));
+            double outerPointY = (isHovered ? outerRadius + 5 : outerRadius) * Math.cos(Math.toRadians(currentAngle + degrees * 0.5D));
+            double innerPointX = innerRadius * Math.sin(Math.toRadians(currentAngle + degrees * 0.5D));
+            double innerPointY = innerRadius * Math.cos(Math.toRadians(currentAngle + degrees * 0.5D));
+
+            drawX += (outerPointX + innerPointX) / 2;
+            drawY -= (outerPointY + innerPointY) / 2;
 
 
             float min = -ITEM_SIZE / 2.0F;
@@ -91,6 +78,8 @@ public class PingSelectScreen extends Screen {
             matrixStack.push();
             RenderSystem.enableBlend();
 
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder bufferBuilder = tessellator.getBuffer();
             MinecraftClient.getInstance().getTextureManager().bindTexture(PingHandler.TEXTURE);
             // Button Icon
             bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -106,7 +95,8 @@ public class PingSelectScreen extends Screen {
                 this.client.textRenderer.draw(matrixStack, type.toString(), centerX - this.client.textRenderer.getWidth(type.toString()) / 2.0F, centerY + outerRadius + 10, 0xFFFFFF);
             }
 
-            offset += degrees;
+            currentAngle += degrees;
+            currentAngle = (int) AngleHelper.correctAngle(currentAngle);
         }
     }
 
@@ -128,6 +118,19 @@ public class PingSelectScreen extends Screen {
         return distance <= radius;
     }
 
+    boolean isAngleBetween(int target, int angle1, int angle2) {
+        int rAngle = ((angle2 - angle1) % 360 + 360) % 360;
+        if (rAngle >= 180) {
+            int temp = angle1;
+            angle1 = angle2;
+            angle2 = temp;
+        }
+        if (angle1 <= angle2)
+            return target >= angle1 && target <= angle2;
+        else
+            return target >= angle1 || target <= angle2;
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int centerX = this.client.getWindow().getScaledWidth() / 2;
@@ -137,24 +140,21 @@ public class PingSelectScreen extends Screen {
             int pingTypes = PingType.values().length - 1;
 
             int degrees = (int) (360.0D / pingTypes);
-
-            double mouseAngle = AngleHelper.getMouseAngle();
-            mouseAngle -= degrees / 2;
-            mouseAngle = 360 + mouseAngle + degrees;
-            mouseAngle = AngleHelper.correctAngle(mouseAngle);
+            int currentAngle = 360 - degrees / 2;
+            int mouseAngle = (int) AngleHelper.getMouseAngle();
 
             for (int i = 0; i < pingTypes; i++) {
                 PingType type = PingType.values()[i + 1];
-                double currAngle = degrees * i;
-                double nextAngle = currAngle + degrees;
-                currAngle = AngleHelper.correctAngle(currAngle);
-                nextAngle = AngleHelper.correctAngle(nextAngle);
-                mouseAngle = AngleHelper.correctAngle(mouseAngle);
+                int nextAngle = currentAngle + degrees;
+                nextAngle = (int) AngleHelper.correctAngle(nextAngle);
 
-                boolean mouseIn = mouseAngle > currAngle && mouseAngle < nextAngle;
+                boolean mouseIn = isAngleBetween(mouseAngle, currentAngle, nextAngle);
                 if (mouseIn) {
                     PingMod.getClientHandler().sendPing(type);
                 }
+
+                currentAngle += degrees;
+                currentAngle = (int) AngleHelper.correctAngle(currentAngle);
             }
         }
         return false;
@@ -177,15 +177,15 @@ public class PingSelectScreen extends Screen {
         RenderSystem.defaultBlendFunc();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(GL11.GL_TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-        for (int i = endingAngle; i >= startingAngle; i--) {
-            double x = Math.sin((i * Math.PI / 180)) * innerRingRadius;
-            double y = Math.cos((i * Math.PI / 180)) * innerRingRadius;
-            bufferBuilder.vertex(centerX + x, centerY + y, 0).color(f1, f2, f3, f).next();
-        }
         for (int i = startingAngle; i <= endingAngle; i++) {
-            double x = Math.sin((i * Math.PI / 180)) * outerRingRadius;
-            double y = Math.cos((i * Math.PI / 180)) * outerRingRadius;
-            bufferBuilder.vertex(centerX + x, centerY + y, 0).color(f1, f2, f3, f).next();
+            double x = Math.sin(Math.toRadians(i)) * innerRingRadius;
+            double y = Math.cos(Math.toRadians(i)) * innerRingRadius;
+            bufferBuilder.vertex(centerX + x, centerY - y, 0).color(f1, f2, f3, f).next();
+        }
+        for (int i = endingAngle; i >= startingAngle; i--) {
+            double x = Math.sin(Math.toRadians(i)) * outerRingRadius;
+            double y = Math.cos(Math.toRadians(i)) * outerRingRadius;
+            bufferBuilder.vertex(centerX + x, centerY - y, 0).color(f1, f2, f3, f).next();
         }
         bufferBuilder.end();
         BufferRenderer.draw(bufferBuilder);

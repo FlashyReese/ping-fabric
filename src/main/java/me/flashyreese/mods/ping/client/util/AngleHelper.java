@@ -10,12 +10,7 @@ public class AngleHelper {
     }
 
     private static double getRelativeAngle(double originX, double originY, double x, double y) {
-        double angle = Math.toDegrees(Math.atan2(x - originX, y - originY));
-
-        // Remove 90 from the angle to make 0 and 180 at the top and bottom of the screen
-        angle -= 180;
-
-        return correctAngle(angle);
+        return correctAngle(Math.toDegrees(Math.atan2(y - originY, x - originX)) + 90);
     }
 
     public static double correctAngle(double angle) {

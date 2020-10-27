@@ -16,6 +16,9 @@
   "icon": "assets/ping/icon.png",
   "environment": "*",
   "entrypoints": {
+    "modmenu": [
+      "me.flashyreese.mods.ping.client.gui.PingModMenuEntry"
+    ],
     "client": [
       "me.flashyreese.mods.ping.PingMod"
     ],

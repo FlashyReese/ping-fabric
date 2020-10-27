@@ -13,5 +13,18 @@
   "ping.subtitle.bloop": "Ping bloops",
 
   "_comment": "Gui",
-  "ping.pingSelect.title" : "Ping Select"
+  "ping.pingSelect.title" : "Ping Selection",
+
+  "ping.config.title": "Configuration of Ping",
+
+  "category.ping.general" : "General",
+  "ping.config.ping_accept_distance": "Ping Accept Distance",
+  "ping.config.ping_duration": "Ping Duration",
+  "ping.config.ping_sound": "Sound",
+
+  "category.ping.visual" : "Visual",
+  "ping.config.ping_red": "Red",
+  "ping.config.ping_green": "Green",
+  "ping.config.ping_blue": "Blue",
+  "ping.config.block_overlay": "Block Overlay"
 }

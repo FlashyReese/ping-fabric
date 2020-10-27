@@ -17,7 +17,7 @@ public class PingClientModConfig {
     private File file;
 
     public static class General {
-        public double pingAcceptDistance;
+        public int pingAcceptDistance;
         public int pingDuration;
         public boolean sound;
 
@@ -33,14 +33,12 @@ public class PingClientModConfig {
         public int pingG;
         public int pingB;
         public boolean blockOverlay;
-        public boolean menuBackground;
 
         public Visual() {
             this.pingR = 255;
             this.pingG = 0;
             this.pingB = 0;
             this.blockOverlay = true;
-            this.menuBackground = true;
         }
     }
 

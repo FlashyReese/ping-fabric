@@ -2,7 +2,7 @@
 A ping tool like in Portal but for Minecraft
 
 You can download them from:
- - [Modrinth](https://github.com/FlashyReese/ping-fabric)
+ - [Modrinth](https://modrinth.com/mod/lp1S4OVU)
  - [GitHub](https://github.com/FlashyReese/ping-fabric)
  - [CurseForge](https://minecraft.curseforge.com/projects/ping-fabric)
 

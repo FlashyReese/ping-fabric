@@ -1,26 +1,32 @@
 package me.flashyreese.mods.ping.data;
 
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+
 public enum PingType {
-    BACKGROUND,
-    ALERT,
-    MINE,
-    LOOK,
-    GOTO;
+    BACKGROUND(null),
+    ALERT("ping.key.alert"),
+    BREAK("ping.key.break"),
+    LOOK("ping.key.look"),
+    GOTO("ping.key.goto"),
+    ATTACK("ping.key.attack");
 
     private final float minU;
     private final float minV;
     private final float maxU;
     private final float maxV;
+    private final String identifier;
 
-    PingType() {
-        int x = 32 * ordinal();
-        int y = 0;
-        float f = (float) (0.009999999776482582D / (double) 256);
-        float f1 = (float) (0.009999999776482582D / (double) 256);
-        this.minU = (float) x / (float) ((double) 256) + f;
-        this.maxU = (float) (x + 32) / (float) ((double) 256) - f;
-        this.minV = (float) y / (float) 256 + f1;
-        this.maxV = (float) (y + 32) / (float) 256 - f1;
+    PingType(String identifier) {
+        this.identifier = identifier;
+        int spriteSheetSize = 256;
+        int spriteSize = 64;
+        int x = spriteSize * ordinal();
+        int y = (x / spriteSheetSize) * spriteSize;
+        this.minU = (float) x / spriteSheetSize;
+        this.maxU = (float) (x + spriteSize) / spriteSheetSize;
+        this.minV = (float) y / spriteSheetSize;
+        this.maxV = (float) (y + spriteSize) / spriteSheetSize;
     }
 
     public float getMinU() {
@@ -37,5 +43,9 @@ public enum PingType {
 
     public float getMaxV() {
         return maxV;
+    }
+
+    public Text getTranslatedText(){
+        return new TranslatableText(this.identifier);
     }
 }

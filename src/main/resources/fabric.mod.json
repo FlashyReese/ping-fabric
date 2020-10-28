@@ -5,9 +5,7 @@
   "name": "Ping",
   "description": "Inspired by Portal 2, this mod brings the Ping tool into Minecraft.",
   "authors": [
-    "FlashyReese",
-    "Girafi",
-    "dmillerw"
+    "FlashyReese"
   ],
   "contact": {
     "issues": "https://github.com/FlashyReese/ping-fabric"

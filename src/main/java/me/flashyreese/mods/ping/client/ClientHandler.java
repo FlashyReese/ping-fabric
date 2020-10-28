@@ -24,17 +24,17 @@ public class ClientHandler {
     private final String PING_CATEGORY = "ping:key.categories.ping";
     public final KeyBinding KEY_BINDING = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.ping", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_V, PING_CATEGORY));
     private final KeyBinding PING_ALERT = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.alert", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_4, PING_CATEGORY));
-    private final KeyBinding PING_MINE = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.mine", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_5, PING_CATEGORY));
+    private final KeyBinding PING_BREAK = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.break", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_5, PING_CATEGORY));
     private final KeyBinding PING_LOOK = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.look", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_6, PING_CATEGORY));
-    private final KeyBinding PING_GOTO = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.goto", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_8, PING_CATEGORY));
+    private final KeyBinding PING_GOTO = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.goto", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_7, PING_CATEGORY));
+    private final KeyBinding PING_ATTACK = KeyBindingHelper.registerKeyBinding(new KeyBinding("ping.key.attack", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_KP_8, PING_CATEGORY));
 
-
-    public void sendPing(PingType type) {
-        Optional<Entity> optional = DebugRenderer.getTargetedEntity(MinecraftClient.getInstance().cameraEntity, (int) PingMod.config().GENERAL.pingAcceptDistance);
+    public void sendPing(MinecraftClient client, PingType type) {
+        Optional<Entity> optional = DebugRenderer.getTargetedEntity(client.cameraEntity, PingMod.config().GENERAL.pingAcceptDistance);
         if (optional.isPresent()) {
             sendPing(optional.get().getEntityId(), new Color(PingMod.config().VISUAL.pingR, PingMod.config().VISUAL.pingG, PingMod.config().VISUAL.pingB).getRGB(), type);
         } else {
-            BlockHitResult raycastResult = raycast(MinecraftClient.getInstance().player, PingMod.config().GENERAL.pingAcceptDistance);
+            BlockHitResult raycastResult = raycast(client.player, PingMod.config().GENERAL.pingAcceptDistance);
             if (raycastResult.getType() == HitResult.Type.BLOCK) {
                 sendPing(raycastResult, new Color(PingMod.config().VISUAL.pingR, PingMod.config().VISUAL.pingG, PingMod.config().VISUAL.pingB).getRGB(), type);
             }
@@ -72,13 +72,15 @@ public class ClientHandler {
             }
 
             if (PING_ALERT.isPressed()) {
-                this.sendPing(PingType.ALERT);
-            } else if (PING_MINE.isPressed()) {
-                this.sendPing(PingType.MINE);
+                this.sendPing(client, PingType.ALERT);
+            } else if (PING_BREAK.isPressed()) {
+                this.sendPing(client, PingType.BREAK);
             } else if (PING_LOOK.isPressed()) {
-                this.sendPing(PingType.LOOK);
+                this.sendPing(client, PingType.LOOK);
             } else if (PING_GOTO.isPressed()) {
-                this.sendPing(PingType.GOTO);
+                this.sendPing(client, PingType.GOTO);
+            } else if (PING_ATTACK.isPressed()) {
+                this.sendPing(client, PingType.ATTACK);
             }
         });
     }

@@ -21,4 +21,25 @@ public class AngleHelper {
         }
         return angle;
     }
+
+
+    public static boolean isInsideCircle(double mouseX, double mouseY, double centerX, double centerY, int radius) {
+        double distX = mouseX - centerX;
+        double distY = mouseY - centerY;
+        double distance = Math.sqrt((distX * distX) + (distY * distY));
+        return distance <= radius;
+    }
+
+    public static boolean isAngleBetween(int target, int angle1, int angle2) {
+        int rAngle = ((angle2 - angle1) % 360 + 360) % 360;
+        if (rAngle >= 180) {
+            int temp = angle1;
+            angle1 = angle2;
+            angle2 = temp;
+        }
+        if (angle1 <= angle2)
+            return target >= angle1 && target <= angle2;
+        else
+            return target >= angle1 || target <= angle2;
+    }
 }

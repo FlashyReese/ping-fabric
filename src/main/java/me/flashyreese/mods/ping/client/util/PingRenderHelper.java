@@ -12,6 +12,7 @@ import net.minecraft.util.math.Matrix4f;
 
 public class PingRenderHelper {
 
+    //Fix: out line the model instead of drawing a block
     public static void drawBlockOverlay(float width, float height, float length, MatrixStack matrixStack, Sprite sprite, int color, int alpha) {
         MatrixStack.Entry matrixEntry = ((MatrixStackAccess) matrixStack).getStack().getLast();
         Matrix4f posMatrix = matrixEntry.getModel();

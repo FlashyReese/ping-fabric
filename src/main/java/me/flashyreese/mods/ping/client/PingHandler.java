@@ -90,31 +90,18 @@ public class PingHandler {
         MatrixStack entityLocation = new MatrixStack();
         ((MatrixStackAccess) entityLocation).getStack().getLast().getModel().multiply(mc.gameRenderer.getBasicProjectionMatrix(renderCamera, tickDelta, false)); //Don't use FOV
 
-        Frustum frustum = new Frustum(((MatrixStackAccess) projectionLook).getStack().getLast().getModel(), ((MatrixStackAccess) entityLocation).getStack().getLast().getModel());
-        frustum.setPosition(clipX, clipY, clipZ);
+        Frustum clippingHelper = new Frustum(((MatrixStackAccess) projectionLook).getStack().getLast().getModel(), ((MatrixStackAccess) entityLocation).getStack().getLast().getModel());
+        clippingHelper.setPosition(clipX, clipY, clipZ);
 
         for (PingWrapper ping : activePings) {
-            double px;
-            double py;
-            double pz;
-            //fixme: temp fix for now
-            Entity entity = mc.player.world.getEntityById(ping.getEntityId());
-            Box box = null;
-            if (ping.getBlockPos() == null) {
-                if (entity == null) continue;
-                px = entity.getPos().getX() + 0.5D - staticPos.getX();
-                py = entity.getPos().getY() + 0.5D - staticPos.getX();
-                pz = entity.getPos().getZ() + 0.5D - staticPos.getX();
-                box = Box.method_29968(entity.getPos());
-            }else{
-                px = ping.getBlockPos().getX() + 0.5D - staticPos.getX();
-                py = ping.getBlockPos().getY() + 0.5D - staticPos.getY();
-                pz = ping.getBlockPos().getZ() + 0.5D - staticPos.getZ();
-                box = ping.getBox();
-            }
-            if (frustum.isVisible(box)) {
+            if (ping.getBlockPos() == null) continue;
+            double px = ping.getBlockPos().getX() + 0.5D - staticPos.getX();
+            double py = ping.getBlockPos().getY() + 0.5D - staticPos.getY();
+            double pz = ping.getBlockPos().getZ() + 0.5D - staticPos.getZ();
+
+            if (clippingHelper.isVisible(ping.getBox())) {
                 ping.setOffscreen(false);
-                if (PingMod.config().VISUAL.blockOverlay && ping.getBlockPos() != null) {
+                if (PingMod.config().VISUAL.blockOverlay) {
                     renderPingOverlay(ping.getBlockPos().getX() - staticPos.getX(), ping.getBlockPos().getY() - staticPos.getY(), ping.getBlockPos().getZ() - staticPos.getZ(), matrix, ping);
                 }
                 renderPing(px, py, pz, matrix, cameraEntity, ping);
@@ -187,16 +174,13 @@ public class PingHandler {
             float max = 8;
 
             // Ping Notice Background
-            int r = ping.getColor() >> 16 & 255;
-            int g = ping.getColor() >> 8 & 255;
-            int b = ping.getColor() & 255;
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), r, g, b, 255);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), r, g, b, 255);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), r, g, b, 255);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV(), r, g, b, 255);
+            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
+            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
+            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
+            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
 
             // Ping Notice Icon
-            float alpha = ping.getType() == PingType.ALERT ? mc.world != null ? (float) (1.0F + (0.01D * Math.sin(mc.world.getTimeOfDay()))) : 0.85F : 0.85F;
+            float alpha = 0.85F;
             VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, ping.getType().getMinU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
             VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, ping.getType().getMaxU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
             VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, ping.getType().getMaxU(), ping.getType().getMinV(), 1.0F, 1.0F, 1.0F, alpha);
@@ -242,16 +226,16 @@ public class PingHandler {
         float max = 0.25F + (0.25F * (float) ping.getAnimationTimer() / 20F);
 
         // Block Overlay Background
-        int r = ping.getColor() >> 16 & 255;
+        /*int r = ping.getColor() >> 16 & 255;
         int g = ping.getColor() >> 8 & 255;
-        int b = ping.getColor() & 255;
-        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), r, g, b, 255);
-        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), r, g, b, 255);
-        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), r, g, b, 255);
-        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV(), r, g, b, 255);
+        int b = ping.getColor() & 255;*/
+        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
+        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
+        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
+        VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
 
         // Block Overlay Icon
-        float alpha = ping.getType() == PingType.ALERT ? mc.world != null ? (float) (1.0F + (0.01D * Math.sin(mc.world.getTimeOfDay()))) : 0.85F : 0.85F;
+        float alpha = 0.85F;
         VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, ping.getType().getMinU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
         VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, ping.getType().getMaxU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
         VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, ping.getType().getMaxU(), ping.getType().getMinV(), 1.0F, 1.0F, 1.0F, alpha);

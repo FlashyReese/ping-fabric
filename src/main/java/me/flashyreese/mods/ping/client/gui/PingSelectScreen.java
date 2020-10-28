@@ -47,10 +47,10 @@ public class PingSelectScreen extends Screen {
             int nextAngle = currentAngle + degrees;
             nextAngle = (int) AngleHelper.correctAngle(nextAngle);
 
-            boolean mouseIn = isAngleBetween(mouseAngle, currentAngle, nextAngle);
+            boolean mouseIn = AngleHelper.isAngleBetween(mouseAngle, currentAngle, nextAngle);
 
-            boolean isHovered = !isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
-                    && isInsideCircle(mouseX, mouseY, centerX, centerY, 75)
+            boolean isHovered = !AngleHelper.isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
+                    && AngleHelper.isInsideCircle(mouseX, mouseY, centerX, centerY, 75)
                     && mouseIn;
             if (isHovered) {
                 this.drawDoughnutSegment(matrixStack, currentAngle, currentAngle + degrees / 2, centerX, centerY, outerRadius + 5, innerRadius, 0xE0000000);
@@ -92,7 +92,7 @@ public class PingSelectScreen extends Screen {
             matrixStack.pop();
 
             if (isHovered) {
-                this.client.textRenderer.draw(matrixStack, type.toString(), centerX - this.client.textRenderer.getWidth(type.toString()) / 2.0F, centerY + outerRadius + 10, 0xFFFFFF);
+                this.client.textRenderer.draw(matrixStack, type.getTranslatedText(), centerX - this.client.textRenderer.getWidth(type.getTranslatedText()) / 2.0F, centerY + outerRadius + 10, 0xFFFFFF);
             }
 
             currentAngle += degrees;
@@ -111,32 +111,12 @@ public class PingSelectScreen extends Screen {
         }
     }
 
-    boolean isInsideCircle(double mouseX, double mouseY, double centerX, double centerY, int radius) {
-        double distX = mouseX - centerX;
-        double distY = mouseY - centerY;
-        double distance = Math.sqrt((distX * distX) + (distY * distY));
-        return distance <= radius;
-    }
-
-    boolean isAngleBetween(int target, int angle1, int angle2) {
-        int rAngle = ((angle2 - angle1) % 360 + 360) % 360;
-        if (rAngle >= 180) {
-            int temp = angle1;
-            angle1 = angle2;
-            angle2 = temp;
-        }
-        if (angle1 <= angle2)
-            return target >= angle1 && target <= angle2;
-        else
-            return target >= angle1 || target <= angle2;
-    }
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int centerX = this.client.getWindow().getScaledWidth() / 2;
         int centerY = this.client.getWindow().getScaledHeight() / 2;
-        if (!isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
-                && isInsideCircle(mouseX, mouseY, centerX, centerY, 75)) {
+        if (!AngleHelper.isInsideCircle(mouseX, mouseY, centerX, centerY, 25)
+                && AngleHelper.isInsideCircle(mouseX, mouseY, centerX, centerY, 75)) {
             int pingTypes = PingType.values().length - 1;
 
             int degrees = (int) (360.0D / pingTypes);
@@ -148,9 +128,9 @@ public class PingSelectScreen extends Screen {
                 int nextAngle = currentAngle + degrees;
                 nextAngle = (int) AngleHelper.correctAngle(nextAngle);
 
-                boolean mouseIn = isAngleBetween(mouseAngle, currentAngle, nextAngle);
+                boolean mouseIn = AngleHelper.isAngleBetween(mouseAngle, currentAngle, nextAngle);
                 if (mouseIn) {
-                    PingMod.getClientHandler().sendPing(type);
+                    PingMod.getClientHandler().sendPing(this.client, type);
                 }
 
                 currentAngle += degrees;

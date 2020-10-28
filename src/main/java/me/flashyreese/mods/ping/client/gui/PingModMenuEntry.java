@@ -42,7 +42,7 @@ public class PingModMenuEntry implements ModMenuApi {
                     .setSaveConsumer(val -> PingMod.config().VISUAL.pingR = val)
                     .build());
 
-            visual.addEntry(builder.entryBuilder().startIntSlider(new TranslatableText("ping.config.ping_green"), PingMod.config().VISUAL.pingG, 0, 1200)
+            visual.addEntry(builder.entryBuilder().startIntSlider(new TranslatableText("ping.config.ping_green"), PingMod.config().VISUAL.pingG, 0, 255)
                     .setDefaultValue(100)
                     .setSaveConsumer(val -> PingMod.config().VISUAL.pingG = val)
                     .build());

@@ -1,0 +1,21 @@
+{
+  "ping:key.categories.ping": "Pingowanie",
+  "key.ping": "Otwórz Menu Wybierania Pingu",
+  "ping.key.alert": "Ping (Zaalarmuj)",
+  "ping.key.break": "Ping (Zniszcz)",
+  "ping.key.look": "Ping (Popatrz)",
+  "ping.key.goto": "Ping (Idź)",
+  "ping.key.attack": "Ping (Atakuj)",
+  "ping.subtitle.bloop": "Ping",
+  "ping.pingSelect.title": "Wybór Pingu",
+  "ping.config.title": "Konfiguracja Ping",
+  "category.ping.general": "Generalne",
+  "ping.config.ping_accept_distance": "Odległość Akceptacji Pingu",
+  "ping.config.ping_duration": "Czas Trwania Pingu",
+  "ping.config.ping_sound": "Dźwięk",
+  "category.ping.visual": "Wizualne",
+  "ping.config.ping_red": "Czerwony",
+  "ping.config.ping_green": "Zielony",
+  "ping.config.ping_blue": "Niebieski",
+  "ping.config.block_overlay": "Nakładka Bloku"
+}

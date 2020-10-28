@@ -1,10 +1,15 @@
-# Ping
+# Ping Tool
+A ping tool like in Portal but for Minecraft
 
-**THIS IS A MODIFIED VERSION OF THE ORIGINAL PING MOD, FOR COMPATIBILITY WITH FABRIC.**
+You can download them from:
+ - [Modrinth](https://github.com/FlashyReese/ping-fabric)
+ - [GitHub](https://github.com/FlashyReese/ping-fabric)
+ - [CurseForge](https://minecraft.curseforge.com/projects/ping-fabric)
 
-**The original source can be found [here.](https://github.com/GirafiStudios/Ping)**
+# Dependencies
+- [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
+- [Cloth Config](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
 
-Inspired by Portal 2, this mod brings the Ping tool into Minecraft
-This mod attempts to replicate that feature in a useful way, but ensure it actually has use in the Minecraft world.
+## Disclaimer
 
-Download on [CurseForge](https://minecraft.curseforge.com/projects/ping-fabric)
+This is a fork of the original Ping mod. This mod has no affiliation with the original Ping mod by any means. If you run into any issues using this mod it should report here. The original source can be found [here.](https://github.com/GirafiStudios/Ping)

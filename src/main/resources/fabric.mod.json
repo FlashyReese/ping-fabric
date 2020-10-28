@@ -3,7 +3,7 @@
   "id": "ping",
   "version": "${version}",
   "name": "Ping",
-  "description": "Inspired by Portal 2, this mod brings the Ping tool into Minecraft.",
+  "description": "A ping tool like in Portal but for Minecraft",
   "authors": [
     "FlashyReese"
   ],
@@ -30,6 +30,7 @@
   "depends": {
     "fabricloader": ">=0.10.0",
     "fabric": "*",
-    "minecraft": "1.16.3"
+    "minecraft": "1.16.3",
+    "cloth-config2": "4.8.2"
   }
 }

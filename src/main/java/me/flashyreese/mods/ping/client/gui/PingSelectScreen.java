@@ -5,6 +5,7 @@ import me.flashyreese.mods.ping.PingMod;
 import me.flashyreese.mods.ping.client.PingHandler;
 import me.flashyreese.mods.ping.client.util.AngleHelper;
 import me.flashyreese.mods.ping.data.PingType;
+import me.flashyreese.mods.ping.util.KeyBindingExtended;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
@@ -102,7 +103,7 @@ public class PingSelectScreen extends Screen {
 
     @Override
     public void tick() {
-        if (!(InputUtil.isKeyPressed(this.client.getWindow().getHandle(), PingMod.getClientHandler().KEY_BINDING.getDefaultKey().getCode()) || InputUtil.isKeyPressed(this.client.getWindow().getHandle(), PingMod.getClientHandler().KEY_BINDING.getDefaultKey().getCode() + 100))) {
+        if (!(InputUtil.isKeyPressed(this.client.getWindow().getHandle(), ((KeyBindingExtended)PingMod.getClientHandler().KEY_BINDING).getBoundKey().getCode()) || InputUtil.isKeyPressed(this.client.getWindow().getHandle(), ((KeyBindingExtended)PingMod.getClientHandler().KEY_BINDING).getBoundKey().getCode() + 100))) {
             final double mouseX = this.client.mouse.getX() * ((double) this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth());
             final double mouseY = this.client.mouse.getY() * ((double) this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight());
 

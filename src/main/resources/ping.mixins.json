@@ -3,11 +3,10 @@
   "minVersion": "0.8",
   "package": "me.flashyreese.mods.ping.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [
-  ],
   "client": [
     "GameRendererMixin",
     "InGameHudMixin",
+    "KeyBindingMixin",
     "MatrixStackAccess",
     "MinecraftClientMixin"
   ],

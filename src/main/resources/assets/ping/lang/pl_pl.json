@@ -14,8 +14,8 @@
   "ping.config.ping_duration": "Czas Trwania Pingu",
   "ping.config.ping_sound": "Dźwięk",
   "category.ping.visual": "Wizualne",
-  "ping.config.ping_red": "Czerwony",
-  "ping.config.ping_green": "Zielony",
-  "ping.config.ping_blue": "Niebieski",
+  "ping.config.ping_red": "Czerwony (R)",
+  "ping.config.ping_green": "Zielony (G)",
+  "ping.config.ping_blue": "Niebieski (B)",
   "ping.config.block_overlay": "Nakładka Bloku"
 }

@@ -1,0 +1,21 @@
+{
+  "ping:key.categories.ping": "Ping",
+  "key.ping": "Abrir menú de selección de ping",
+  "ping.key.alert": "Ping (Alerta)",
+  "ping.key.break": "Ping (Rompe)",
+  "ping.key.look": "Ping (Mira)",
+  "ping.key.goto": "Ping (Ir)",
+  "ping.key.attack": "Ping (Ataque)",
+  "ping.subtitle.bloop": "Ping bloops",
+  "ping.pingSelect.title": "Selección de Ping",
+  "ping.config.title": "Configuración de Ping",
+  "category.ping.general": "General",
+  "ping.config.ping_accept_distance": "Distancia de aceptación de ping",
+  "ping.config.ping_duration": "Duración del ping",
+  "ping.config.ping_sound": "Sonido",
+  "category.ping.visual": "Visual",
+  "ping.config.ping_red": "Rojo (R)",
+  "ping.config.ping_green": "Verde (G)",
+  "ping.config.ping_blue": "Azul (B)",
+  "ping.config.block_overlay": "Superposición de bloques"
+}

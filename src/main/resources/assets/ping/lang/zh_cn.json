@@ -1,0 +1,21 @@
+{
+  "ping:key.categories.ping": "Ping",
+  "key.ping": "打开Ping选择菜单",
+  "ping.key.alert": "Ping（注意）",
+  "ping.key.break": "Ping（破坏）",
+  "ping.key.look": "Ping (看向)",
+  "ping.key.goto": "Ping（前往）",
+  "ping.key.attack": "Ping（攻击）",
+  "ping.subtitle.bloop": "Ping哔～～",
+  "ping.pingSelect.title": "Ping选项",
+  "ping.config.title": "Ping设置",
+  "category.ping.general": "常规",
+  "ping.config.ping_accept_distance": "可接受Ping的范围",
+  "ping.config.ping_duration": "Ping的持续时间",
+  "ping.config.ping_sound": "声音",
+  "category.ping.visual": "视觉",
+  "ping.config.ping_red": "红（R）",
+  "ping.config.ping_green": "绿（G）",
+  "ping.config.ping_blue": "蓝（B）",
+  "ping.config.block_overlay": "方块叠加显示"
+}

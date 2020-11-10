@@ -1,0 +1,21 @@
+{
+  "ping:key.categories.ping": "पिंग",
+  "key.ping": "पिंग चयन मेनू खोलें",
+  "ping.key.alert": "पिंग (चेतावनी)",
+  "ping.key.break": "पिंग (तोडना)",
+  "ping.key.look": "पिंग (देखना)",
+  "ping.key.goto": "पिंग (जाना)",
+  "ping.key.attack": "पिंग (हमला)",
+  "ping.subtitle.bloop": "पिंग बीप किया",
+  "ping.pingSelect.title": "पिंग चयन",
+  "ping.config.title": "पिंग विन्यास",
+  "category.ping.general": "सामान्य",
+  "ping.config.ping_accept_distance": "पिंग स्वीकार दूरी",
+  "ping.config.ping_duration": "पिंग अवधि",
+  "ping.config.ping_sound": "आवाज़",
+  "category.ping.visual": "दृश्य",
+  "ping.config.ping_red": "लाल (R)",
+  "ping.config.ping_green": "हरा (G)",
+  "ping.config.ping_blue": "नीला (B)",
+  "ping.config.block_overlay": "प्रखंड उपरिशायी"
+}

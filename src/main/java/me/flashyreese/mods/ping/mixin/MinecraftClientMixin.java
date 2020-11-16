@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {
 
-    @Inject(method = "hasOutline", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "hasOutline", at = @At("RETURN"), cancellable = true)
     private void shouldGlow(Entity entity, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
         if (entity != null) {
-            callbackInfoReturnable.setReturnValue(PingMod.getPingHandler().hasOutline(entity));
+            callbackInfoReturnable.setReturnValue(callbackInfoReturnable.getReturnValue() || PingMod.getPingHandler().hasOutline(entity));
         }
     }
 }

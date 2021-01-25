@@ -1,48 +1,60 @@
-package me.flashyreese.mods.ping.client;
+package me.flashyreese.mods.ping.client.data;
 
 import me.flashyreese.mods.ping.PingMod;
+import me.flashyreese.mods.ping.client.PingClientMod;
 import me.flashyreese.mods.ping.client.util.GLUUtils;
 import me.flashyreese.mods.ping.client.util.PingRenderHelper;
 import me.flashyreese.mods.ping.client.util.VertexHelper;
-import me.flashyreese.mods.ping.data.PingType;
-import me.flashyreese.mods.ping.data.PingWrapper;
 import me.flashyreese.mods.ping.mixin.MatrixStackAccess;
 import me.flashyreese.mods.ping.util.PingSounds;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.*;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 public class PingHandler {
     public static final Identifier TEXTURE = new Identifier("ping", "textures/ping.png");
-    private static List<PingWrapper> activePings = new ArrayList<>();
+    private static final List<PingWrapper> activePings = new ArrayList<>();
 
     public void onPingPacket(PingWrapper ping) {
+        //todo: check if Block is already highlighted by the same player
         MinecraftClient mc = MinecraftClient.getInstance();
         if (ping.getBlockPos() != null) {
-            if (mc.player != null && MathHelper.sqrt(mc.player.squaredDistanceTo(ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ())) <= PingMod.config().GENERAL.pingAcceptDistance) {
-                if (PingMod.config().GENERAL.sound) {
+            if (mc.player != null && MathHelper.sqrt(mc.player.squaredDistanceTo(ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ())) <= PingClientMod.config().GENERAL.pingAcceptDistance) {
+                if (PingClientMod.config().GENERAL.sound) {
                     mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ()));
                 }
-                ping.setTimer(PingMod.config().GENERAL.pingDuration);
-                activePings.add(ping);
+                ping.setTimer(PingClientMod.config().GENERAL.pingDuration);
+                Optional<PingWrapper> pingWrapperOptional = activePings.stream().filter(pingWrapper -> pingWrapper.senderUUID.equals(ping.senderUUID) && pingWrapper.getBlockPos() != null && pingWrapper.getBlockPos().equals(ping.getBlockPos())).findFirst();
+                if (!pingWrapperOptional.isPresent()){
+                    activePings.add(ping);
+                }
             }
         } else {
             if (mc.player != null) {
@@ -50,26 +62,27 @@ public class PingHandler {
 
                 if (entity != null) {
                     Vec3d pos = entity.getPos();
-                    if (PingMod.config().GENERAL.sound) {
+                    if (PingClientMod.config().GENERAL.sound) {
                         mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, pos.getX(), pos.getY(), pos.getZ()));
                     }
-                    ping.setTimer(PingMod.config().GENERAL.pingDuration);
+                    ping.setTimer(PingClientMod.config().GENERAL.pingDuration);
                     activePings.add(ping);
                 }
             }
         }
     }
 
-    public boolean hasOutline(Entity entity){
-        for (PingWrapper ping: activePings){
-            if (entity == MinecraftClient.getInstance().player.world.getEntityById(ping.getEntityId())){
+    public boolean hasOutline(Entity entity) {
+        if (MinecraftClient.getInstance().player == null) return false;
+        for (PingWrapper ping : activePings) {
+            if (entity == MinecraftClient.getInstance().player.world.getEntityById(ping.getEntityId())) {
                 return true;
             }
         }
         return false;
     }
 
-    public void onRenderWorld(Camera camera, float tickDelta, long limitTime, MatrixStack matrix) {
+    public void onRenderWorld(float tickDelta, MatrixStack matrix) {
         MinecraftClient mc = MinecraftClient.getInstance();
         Entity cameraEntity = mc.getCameraEntity();
         if (cameraEntity == null || activePings.isEmpty()) return;
@@ -101,7 +114,7 @@ public class PingHandler {
 
             if (clippingHelper.isVisible(ping.getBox())) {
                 ping.setOffscreen(false);
-                if (PingMod.config().VISUAL.blockOverlay) {
+                if (PingClientMod.config().VISUAL.blockOverlay) {
                     renderPingOverlay(ping.getBlockPos().getX() - staticPos.getX(), ping.getBlockPos().getY() - staticPos.getY(), ping.getBlockPos().getZ() - staticPos.getZ(), matrix, ping);
                 }
                 renderPing(px, py, pz, matrix, cameraEntity, ping);
@@ -112,7 +125,7 @@ public class PingHandler {
         }
     }
 
-    public void renderPingOffscreen(MatrixStack matrices, float tickDelta) {
+    public void renderPingOffscreen(MatrixStack matrices) {
         MinecraftClient mc = MinecraftClient.getInstance();
         for (PingWrapper ping : activePings) {
             //if (ping.getBlockPos() == null) continue;
@@ -274,4 +287,35 @@ public class PingHandler {
         }
     }
 
+    public void sendPing(MinecraftClient client, PingType type) {
+        Optional<Entity> optional = DebugRenderer.getTargetedEntity(client.cameraEntity, PingClientMod.config().GENERAL.pingAcceptDistance);
+        if (optional.isPresent()) {
+            sendPing(optional.get().getEntityId(), new Color(PingClientMod.config().VISUAL.pingR, PingClientMod.config().VISUAL.pingG, PingClientMod.config().VISUAL.pingB).getRGB(), type);
+        } else {
+            if (client.player == null) return;
+            BlockHitResult raycastResult = raycast(client.player, PingClientMod.config().GENERAL.pingAcceptDistance);
+            if (raycastResult.getType() == HitResult.Type.BLOCK) {
+                sendPing(raycastResult, new Color(PingClientMod.config().VISUAL.pingR, PingClientMod.config().VISUAL.pingG, PingClientMod.config().VISUAL.pingB).getRGB(), type);
+            }
+        }
+
+    }
+
+    private void sendPing(BlockHitResult raytrace, int color, PingType type) {
+        //todo: check if Block is already highlighted by the same player
+        if (ClientSidePacketRegistry.INSTANCE.canServerReceive(PingMod.getPacketHandler().PING_HIGHLIGHT_ID)) {
+            ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.getPacketHandler().PING_HIGHLIGHT_ID, new PingWrapper(raytrace.getBlockPos(), color, type).getPacketByteBuf());
+        }
+    }
+
+    private void sendPing(int entityID, int color, PingType type) {
+        if (ClientSidePacketRegistry.INSTANCE.canServerReceive(PingMod.getPacketHandler().PING_HIGHLIGHT_ID)) {
+            ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.getPacketHandler().PING_HIGHLIGHT_ID, new PingWrapper(entityID, color, type).getPacketByteBuf());
+        }
+    }
+
+    private BlockHitResult raycast(PlayerEntity player, double distance) {
+        float eyeHeight = player.getStandingEyeHeight();
+        return (BlockHitResult) player.raycast(distance, eyeHeight, false);
+    }
 }

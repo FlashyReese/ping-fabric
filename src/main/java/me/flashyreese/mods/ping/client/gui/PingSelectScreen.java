@@ -1,10 +1,11 @@
 package me.flashyreese.mods.ping.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import me.flashyreese.mods.ping.PingMod;
-import me.flashyreese.mods.ping.client.PingHandler;
+import me.flashyreese.mods.ping.client.PingClientMod;
+import me.flashyreese.mods.ping.client.config.PingClientConfig;
+import me.flashyreese.mods.ping.client.data.PingHandler;
 import me.flashyreese.mods.ping.client.util.AngleHelper;
-import me.flashyreese.mods.ping.data.PingType;
+import me.flashyreese.mods.ping.client.data.PingType;
 import me.flashyreese.mods.ping.util.KeyBindingExtended;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -64,10 +65,13 @@ public class PingSelectScreen extends Screen {
             double drawX = centerX;
             double drawY = centerY;
 
-            double outerPointX = (isHovered ? outerRadius + 5 : outerRadius) * Math.sin(Math.toRadians(currentAngle + degrees * 0.5D));
-            double outerPointY = (isHovered ? outerRadius + 5 : outerRadius) * Math.cos(Math.toRadians(currentAngle + degrees * 0.5D));
-            double innerPointX = innerRadius * Math.sin(Math.toRadians(currentAngle + degrees * 0.5D));
-            double innerPointY = innerRadius * Math.cos(Math.toRadians(currentAngle + degrees * 0.5D));
+            double sin = Math.sin(Math.toRadians(currentAngle + degrees * 0.5D));
+            double cos = Math.cos(Math.toRadians(currentAngle + degrees * 0.5D));
+
+            double outerPointX = (isHovered ? outerRadius + 5 : outerRadius) * sin;
+            double outerPointY = (isHovered ? outerRadius + 5 : outerRadius) * cos;
+            double innerPointX = innerRadius * sin;
+            double innerPointY = innerRadius * cos;
 
             drawX += (outerPointX + innerPointX) / 2;
             drawY -= (outerPointY + innerPointY) / 2;
@@ -103,12 +107,13 @@ public class PingSelectScreen extends Screen {
 
     @Override
     public void tick() {
-        if (!(InputUtil.isKeyPressed(this.client.getWindow().getHandle(), ((KeyBindingExtended)PingMod.getClientHandler().KEY_BINDING).getBoundKey().getCode()) || InputUtil.isKeyPressed(this.client.getWindow().getHandle(), ((KeyBindingExtended)PingMod.getClientHandler().KEY_BINDING).getBoundKey().getCode() + 100))) {
-            final double mouseX = this.client.mouse.getX() * ((double) this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth());
-            final double mouseY = this.client.mouse.getY() * ((double) this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight());
+        if (PingClientMod.config().GENERAL.pingMenuMode == PingClientConfig.General.PingMenuMode.HOLD){
+            if (!(InputUtil.isKeyPressed(this.client.getWindow().getHandle(), ((KeyBindingExtended) PingClientMod.getClientRegistry().KEY_BINDING).getBoundKey().getCode()) || InputUtil.isKeyPressed(this.client.getWindow().getHandle(), ((KeyBindingExtended) PingClientMod.getClientRegistry().KEY_BINDING).getBoundKey().getCode() + 100))) {
+                final double mouseX = this.client.mouse.getX() * ((double) this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth());
+                final double mouseY = this.client.mouse.getY() * ((double) this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight());
 
-            this.mouseClicked(mouseX, mouseY, 0);
-            this.client.openScreen(null);
+                this.mouseClicked(mouseX, mouseY, 0);
+            }
         }
     }
 
@@ -131,13 +136,14 @@ public class PingSelectScreen extends Screen {
 
                 boolean mouseIn = AngleHelper.isAngleBetween(mouseAngle, currentAngle, nextAngle);
                 if (mouseIn) {
-                    PingMod.getClientHandler().sendPing(this.client, type);
+                    PingClientMod.getClientRegistry().getPingHandler().sendPing(this.client, type);
                 }
 
                 currentAngle += degrees;
                 currentAngle = (int) AngleHelper.correctAngle(currentAngle);
             }
         }
+        this.client.openScreen(null);
         return false;
     }
 

@@ -1,6 +1,6 @@
 package me.flashyreese.mods.ping.client.util;
 
-import me.flashyreese.mods.ping.client.PingRenderType;
+import me.flashyreese.mods.ping.client.data.PingRenderType;
 import me.flashyreese.mods.ping.mixin.MatrixStackAccess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -12,7 +12,7 @@ import net.minecraft.util.math.Matrix4f;
 
 public class PingRenderHelper {
 
-    //Fix: out line the model instead of drawing a block
+    //Fixme: out line the model instead of drawing a block
     public static void drawBlockOverlay(float width, float height, float length, MatrixStack matrixStack, Sprite sprite, int color, int alpha) {
         MatrixStack.Entry matrixEntry = ((MatrixStackAccess) matrixStack).getStack().getLast();
         Matrix4f posMatrix = matrixEntry.getModel();

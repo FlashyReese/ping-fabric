@@ -1,6 +1,6 @@
 package me.flashyreese.mods.ping.mixin;
 
-import me.flashyreese.mods.ping.PingMod;
+import me.flashyreese.mods.ping.client.PingClientMod;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -20,6 +20,6 @@ public class GameRendererMixin {
 
     @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;render(Lnet/minecraft/client/util/math/MatrixStack;FJZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lnet/minecraft/util/math/Matrix4f;)V", shift = At.Shift.AFTER))
     public void postRender(float tickDelta, long limitTime, MatrixStack matrix, CallbackInfo callbackInfo) {
-        PingMod.getPingHandler().onRenderWorld(camera, tickDelta, limitTime, matrix);
+        PingClientMod.getClientRegistry().getPingHandler().onRenderWorld(tickDelta, matrix);
     }
 }

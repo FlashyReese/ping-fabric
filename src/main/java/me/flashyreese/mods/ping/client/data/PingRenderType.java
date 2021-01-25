@@ -1,4 +1,4 @@
-package me.flashyreese.mods.ping.client;
+package me.flashyreese.mods.ping.client.data;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.render.RenderLayer;

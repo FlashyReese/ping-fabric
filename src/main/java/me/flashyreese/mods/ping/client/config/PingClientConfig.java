@@ -1,4 +1,4 @@
-package me.flashyreese.mods.ping.util;
+package me.flashyreese.mods.ping.client.config;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -10,21 +10,28 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 
-public class PingClientModConfig {
+public class PingClientConfig {
     public final General GENERAL = new General();
     public final Visual VISUAL = new Visual();
 
     private File file;
 
     public static class General {
+        public PingMenuMode pingMenuMode;
         public int pingAcceptDistance;
         public int pingDuration;
         public boolean sound;
 
         public General() {
+            this.pingMenuMode = PingMenuMode.HOLD;
             this.pingAcceptDistance = 64;
             this.pingDuration = 60;
             this.sound = true;
+        }
+
+        public enum PingMenuMode{
+            HOLD,
+            TAP,
         }
     }
 
@@ -48,17 +55,17 @@ public class PingClientModConfig {
             .excludeFieldsWithModifiers(Modifier.PRIVATE)
             .create();
 
-    public static PingClientModConfig load(File file) {
-        PingClientModConfig config;
+    public static PingClientConfig load(File file) {
+        PingClientConfig config;
 
         if (file.exists()) {
             try (FileReader reader = new FileReader(file)) {
-                config = gson.fromJson(reader, PingClientModConfig.class);
+                config = gson.fromJson(reader, PingClientConfig.class);
             } catch (IOException e) {
                 throw new RuntimeException("Could not parse config", e);
             }
         } else {
-            config = new PingClientModConfig();
+            config = new PingClientConfig();
         }
 
         config.file = file;

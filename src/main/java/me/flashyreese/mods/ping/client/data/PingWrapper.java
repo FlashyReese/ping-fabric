@@ -1,4 +1,4 @@
-package me.flashyreese.mods.ping.data;
+package me.flashyreese.mods.ping.client.data;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -11,7 +11,7 @@ public class PingWrapper {
     private int entityId = -1;
     private final int color;
     private final PingType type;
-    //public final long uuid;
+    public final String senderUUID;
     private boolean isOffscreen = false;
     private float screenX;
     private float screenY;
@@ -25,6 +25,16 @@ public class PingWrapper {
         this.type = type;
         this.packetByteBuf = new PacketByteBuf(Unpooled.buffer());
         this.writeToBuffer(packetByteBuf, true);
+        this.senderUUID = null;
+    }
+
+    public PingWrapper(BlockPos pos, int color, PingType type, String senderUUID) {
+        this.blockPos = pos;
+        this.color = color;
+        this.type = type;
+        this.packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+        this.writeToBuffer(packetByteBuf, true);
+        this.senderUUID = senderUUID;
     }
 
     public PingWrapper(int entityId, int color, PingType type){
@@ -33,6 +43,16 @@ public class PingWrapper {
         this.type = type;
         this.packetByteBuf = new PacketByteBuf(Unpooled.buffer());
         this.writeToBuffer(packetByteBuf, false);
+        this.senderUUID = null;
+    }
+
+    public PingWrapper(int entityId, int color, PingType type, String senderUUID){
+        this.entityId = entityId;
+        this.color = color;
+        this.type = type;
+        this.packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+        this.writeToBuffer(packetByteBuf, false);
+        this.senderUUID = senderUUID;
     }
 
     private void writeToBuffer(ByteBuf buffer, boolean isBlock) {
@@ -50,10 +70,6 @@ public class PingWrapper {
 
     public BlockPos getBlockPos() {
         return blockPos;
-    }
-
-    public void setBlockPos(BlockPos blockPos) {
-        this.blockPos = blockPos;
     }
 
     public int getEntityId() {
@@ -116,7 +132,7 @@ public class PingWrapper {
         return new Box(this.blockPos.getX(), this.blockPos.getY(), this.blockPos.getZ(), this.blockPos.getX(), this.blockPos.getY(), this.blockPos.getZ());
     }
 
-    public static PingWrapper of(ByteBuf buffer) {
+    public static PingWrapper of(ByteBuf buffer, String uuid) {
         boolean isBlock = buffer.readBoolean();
         int x = -1;
         int y = -1;
@@ -131,6 +147,6 @@ public class PingWrapper {
         }
         int color = buffer.readInt();
         PingType type = PingType.values()[buffer.readInt()];
-        return isBlock ? new PingWrapper(new BlockPos(x, y, z), color, type) : new PingWrapper(entityId, color, type);
+        return isBlock ? new PingWrapper(new BlockPos(x, y, z), color, type, uuid) : new PingWrapper(entityId, color, type, uuid);
     }
 }

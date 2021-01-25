@@ -18,7 +18,7 @@
       "me.flashyreese.mods.ping.client.gui.PingModMenuEntry"
     ],
     "client": [
-      "me.flashyreese.mods.ping.PingMod"
+      "me.flashyreese.mods.ping.client.PingClientMod"
     ],
     "main": [
       "me.flashyreese.mods.ping.PingMod"

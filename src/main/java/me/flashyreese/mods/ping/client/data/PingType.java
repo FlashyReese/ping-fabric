@@ -1,4 +1,4 @@
-package me.flashyreese.mods.ping.data;
+package me.flashyreese.mods.ping.client.data;
 
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;

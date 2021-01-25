@@ -10,6 +10,7 @@
   "ping.pingSelect.title": "Ping Selection",
   "ping.config.title": "Configuration of Ping",
   "category.ping.general": "General",
+  "ping.config.ping_menu_mode": "Ping Menu Mode",
   "ping.config.ping_accept_distance": "Ping Accept Distance",
   "ping.config.ping_duration": "Ping Duration",
   "ping.config.ping_sound": "Sound",

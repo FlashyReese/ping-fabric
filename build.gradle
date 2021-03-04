@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.5-SNAPSHOT'
+    id 'fabric-loom' version '0.6-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -10,13 +10,18 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
+repositories {
+    maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.terraformersmc.com/releases/"}
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
     modImplementation ("me.shedaniel.cloth:config-2:${project.cloth_config}") {
         exclude group : "net.fabricmc.fabric-api"
     }
@@ -35,9 +40,9 @@ if (project.use_third_party_mods) {
             transitive = false
         }
 
-        modRuntime ("com.github.jellysquid3:sodium-fabric:${project.sodium_version}")
-        //modRuntime ("com.github.jellysquid3:lithium-fabric:${project.lithium_version}")
-        modRuntime ("com.github.jellysquid3:phosphor-fabric:${project.phosphor_version}")
+        modRuntime ("com.github.CaffeineMC:sodium-fabric:${project.sodium_version}")
+        //modRuntime ("com.github.CaffeineMC:lithium-fabric:${project.lithium_version}")
+        modRuntime ("com.github.CaffeineMC:phosphor-fabric:${project.phosphor_version}")
     }
 }
 

@@ -7,7 +7,6 @@
     "GameRendererMixin",
     "InGameHudMixin",
     "KeyBindingMixin",
-    "MatrixStackAccess",
     "MinecraftClientMixin"
   ],
   "injectors": {

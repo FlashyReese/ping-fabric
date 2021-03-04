@@ -1,6 +1,5 @@
 package me.flashyreese.mods.ping.mixin;
 
-import me.flashyreese.mods.ping.PingMod;
 import me.flashyreese.mods.ping.client.PingClientMod;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;

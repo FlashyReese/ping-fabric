@@ -136,7 +136,7 @@ public class PingSelectScreen extends Screen {
 
                 boolean mouseIn = AngleHelper.isAngleBetween(mouseAngle, currentAngle, nextAngle);
                 if (mouseIn) {
-                    PingClientMod.getClientRegistry().getPingHandler().sendPing(this.client, type);
+                    PingClientMod.getClientRegistry().getPingHandler().sendBlockPing(this.client, type);
                 }
 
                 currentAngle += degrees;

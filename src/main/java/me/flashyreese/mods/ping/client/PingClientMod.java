@@ -14,8 +14,9 @@ public class PingClientMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        PingMod.getPacketHandler().registerClientPacket();
+        PingMod.getPacketHandler().registerS2CListeners();
         getClientRegistry().registerEvents();
+        getClientRegistry().registerCommands();
     }
 
     public static ClientRegistry getClientRegistry() {

@@ -1,13 +1,15 @@
 package me.flashyreese.mods.ping.client.data;
 
-import me.flashyreese.mods.ping.PingMod;
 import me.flashyreese.mods.ping.client.PingClientMod;
+import me.flashyreese.mods.ping.client.data.ping.BlockPingWrapper;
+import me.flashyreese.mods.ping.client.data.ping.EntityPingWrapper;
+import me.flashyreese.mods.ping.client.data.ping.PingWrapper;
 import me.flashyreese.mods.ping.client.util.GLUUtils;
 import me.flashyreese.mods.ping.client.util.PingRenderHelper;
 import me.flashyreese.mods.ping.client.util.VertexHelper;
-import me.flashyreese.mods.ping.mixin.MatrixStackAccess;
+import me.flashyreese.mods.ping.network.packet.HighlightBlockPacket;
 import me.flashyreese.mods.ping.util.PingSounds;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
@@ -40,42 +42,43 @@ import java.util.Optional;
 
 public class PingHandler {
     public static final Identifier TEXTURE = new Identifier("ping", "textures/ping.png");
-    private static final List<PingWrapper> activePings = new ArrayList<>();
+    private final List<PingWrapper> activePings = new ArrayList<>();
 
-    public void onPingPacket(PingWrapper ping) {
-        //todo: check if Block is already highlighted by the same player
+    //todo: check if Block is already highlighted by the same player
+    public void onBlockPingPacket(BlockPingWrapper ping) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        if (ping.getBlockPos() != null) {
-            if (mc.player != null && MathHelper.sqrt(mc.player.squaredDistanceTo(ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ())) <= PingClientMod.config().GENERAL.pingAcceptDistance) {
+        if (mc.player != null && MathHelper.sqrt(mc.player.squaredDistanceTo(ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ())) <= PingClientMod.config().GENERAL.pingAcceptDistance) {
+            if (PingClientMod.config().GENERAL.sound) {
+                mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ()));
+            }
+            ping.setTimer(PingClientMod.config().GENERAL.pingDuration);
+            Optional<PingWrapper> pingWrapperOptional = this.activePings.stream().filter(pingWrapper -> pingWrapper.getSenderUUID().equals(ping.getSenderUUID()) && pingWrapper instanceof BlockPingWrapper && ((BlockPingWrapper) pingWrapper).getBlockPos().equals(ping.getBlockPos())).findFirst();
+            if (!pingWrapperOptional.isPresent()) {
+                this.activePings.add(ping);
+            }
+        }
+    }
+
+    public void onEntityPingPacket(EntityPingWrapper ping) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player != null) {
+            Entity entity = mc.player.world.getEntityById(ping.getEntityID());
+
+            if (entity != null) {
+                Vec3d pos = entity.getPos();
                 if (PingClientMod.config().GENERAL.sound) {
-                    mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, ping.getBlockPos().getX(), ping.getBlockPos().getY(), ping.getBlockPos().getZ()));
+                    mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, pos.getX(), pos.getY(), pos.getZ()));
                 }
                 ping.setTimer(PingClientMod.config().GENERAL.pingDuration);
-                Optional<PingWrapper> pingWrapperOptional = activePings.stream().filter(pingWrapper -> pingWrapper.senderUUID.equals(ping.senderUUID) && pingWrapper.getBlockPos() != null && pingWrapper.getBlockPos().equals(ping.getBlockPos())).findFirst();
-                if (!pingWrapperOptional.isPresent()){
-                    activePings.add(ping);
-                }
-            }
-        } else {
-            if (mc.player != null) {
-                Entity entity = mc.player.world.getEntityById(ping.getEntityId());
-
-                if (entity != null) {
-                    Vec3d pos = entity.getPos();
-                    if (PingClientMod.config().GENERAL.sound) {
-                        mc.getSoundManager().play(new PositionedSoundInstance(PingSounds.BLOOP, SoundCategory.PLAYERS, 0.25F, 1.0F, pos.getX(), pos.getY(), pos.getZ()));
-                    }
-                    ping.setTimer(PingClientMod.config().GENERAL.pingDuration);
-                    activePings.add(ping);
-                }
+                this.activePings.add(ping);
             }
         }
     }
 
     public boolean hasOutline(Entity entity) {
         if (MinecraftClient.getInstance().player == null) return false;
-        for (PingWrapper ping : activePings) {
-            if (entity == MinecraftClient.getInstance().player.world.getEntityById(ping.getEntityId())) {
+        for (PingWrapper ping : this.activePings) {
+            if (ping instanceof EntityPingWrapper && entity == MinecraftClient.getInstance().player.world.getEntityById(((EntityPingWrapper) ping).getEntityID())) {
                 return true;
             }
         }
@@ -85,7 +88,7 @@ public class PingHandler {
     public void onRenderWorld(float tickDelta, MatrixStack matrix) {
         MinecraftClient mc = MinecraftClient.getInstance();
         Entity cameraEntity = mc.getCameraEntity();
-        if (cameraEntity == null || activePings.isEmpty()) return;
+        if (cameraEntity == null || this.activePings.isEmpty()) return;
         Vec3d staticPos = BlockEntityRenderDispatcher.INSTANCE.camera.getPos();
         Camera renderCamera = BlockEntityRenderDispatcher.INSTANCE.camera;
         double clipX = staticPos.getX() + (cameraEntity.getX() - staticPos.getX());
@@ -101,113 +104,115 @@ public class PingHandler {
         projectionLook.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(0));
 
         MatrixStack entityLocation = new MatrixStack();
-        ((MatrixStackAccess) entityLocation).getStack().getLast().getModel().multiply(mc.gameRenderer.getBasicProjectionMatrix(renderCamera, tickDelta, false)); //Don't use FOV
+        entityLocation.peek().getModel().multiply(mc.gameRenderer.getBasicProjectionMatrix(renderCamera, tickDelta, false)); //Don't use FOV
 
-        Frustum clippingHelper = new Frustum(((MatrixStackAccess) projectionLook).getStack().getLast().getModel(), ((MatrixStackAccess) entityLocation).getStack().getLast().getModel());
+        Frustum clippingHelper = new Frustum(projectionLook.peek().getModel(), entityLocation.peek().getModel());
         clippingHelper.setPosition(clipX, clipY, clipZ);
 
-        for (PingWrapper ping : activePings) {
-            if (ping.getBlockPos() == null) continue;
-            double px = ping.getBlockPos().getX() + 0.5D - staticPos.getX();
-            double py = ping.getBlockPos().getY() + 0.5D - staticPos.getY();
-            double pz = ping.getBlockPos().getZ() + 0.5D - staticPos.getZ();
+        for (PingWrapper ping : this.activePings) {
+            if (ping instanceof BlockPingWrapper) {
+                BlockPingWrapper pingWrapper = (BlockPingWrapper) ping;
+                double px = pingWrapper.getBlockPos().getX() + 0.5D - staticPos.getX();
+                double py = pingWrapper.getBlockPos().getY() + 0.5D - staticPos.getY();
+                double pz = pingWrapper.getBlockPos().getZ() + 0.5D - staticPos.getZ();
 
-            if (clippingHelper.isVisible(ping.getBox())) {
-                ping.setOffscreen(false);
-                if (PingClientMod.config().VISUAL.blockOverlay) {
-                    renderPingOverlay(ping.getBlockPos().getX() - staticPos.getX(), ping.getBlockPos().getY() - staticPos.getY(), ping.getBlockPos().getZ() - staticPos.getZ(), matrix, ping);
+                if (clippingHelper.isVisible(pingWrapper.getBox())) {
+                    pingWrapper.setOffscreen(false);
+                    if (PingClientMod.config().VISUAL.blockOverlay) {
+                        renderPingOverlay(pingWrapper.getBlockPos().getX() - staticPos.getX(), pingWrapper.getBlockPos().getY() - staticPos.getY(), pingWrapper.getBlockPos().getZ() - staticPos.getZ(), matrix, ping);
+                    }
+                    renderPing(px, py, pz, matrix, cameraEntity, ping);
+                } else {
+                    pingWrapper.setOffscreen(true);
+                    translatePingCoordinates(px, py, pz, pingWrapper);
                 }
-                renderPing(px, py, pz, matrix, cameraEntity, ping);
-            } else {
-                ping.setOffscreen(true);
-                translatePingCoordinates(px, py, pz, ping);
             }
         }
     }
 
     public void renderPingOffscreen(MatrixStack matrices) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        for (PingWrapper ping : activePings) {
-            //if (ping.getBlockPos() == null) continue;
+        for (PingWrapper ping : this.activePings) {
+            if (ping instanceof BlockPingWrapper) {
+                BlockPingWrapper pingWrapper = (BlockPingWrapper) ping;
 
-            if (!ping.isOffscreen() || mc.currentScreen != null || mc.options.debugEnabled) {
-                continue;
+                if (!pingWrapper.isOffscreen() || mc.currentScreen != null || mc.options.debugEnabled) {
+                    continue;
+                }
+                int width = mc.getWindow().getWidth();
+                int height = mc.getWindow().getHeight();
+
+                int x1 = -(width / 2) + 32;
+                int y1 = -(height / 2) + 32;
+                int x2 = (width / 2) - 32;
+                int y2 = (height / 2) - 32;
+
+                double pingX = pingWrapper.getScreenX();
+                double pingY = pingWrapper.getScreenY();
+
+                pingX -= width * 0.5D;
+                pingY -= height * 0.5D;
+
+                //TODO Fix that player rotation is not being taken into account. Been an issue since the creation of the mod
+                double angle = Math.atan2(pingY, pingX);
+                angle += (Math.toRadians(90));
+                double cos = Math.cos(angle);
+                double sin = Math.sin(angle);
+                double m = cos / sin;
+
+                if (cos > 0) {
+                    pingX = y2 / m;
+                    pingY = y2;
+                } else {
+                    pingX = y1 / m;
+                    pingY = y1;
+                }
+
+                if (pingX > x2) {
+                    pingX = x2;
+                    pingY = x2 * m;
+                } else if (pingX < x1) {
+                    pingX = x1;
+                    pingY = x1 * m;
+                }
+
+                pingX += width * 0.5D;
+                pingY += height * 0.5D;
+
+                matrices.push();
+                Matrix4f matrix4f = matrices.peek().getModel();
+                RenderLayer pingType = PingRenderType.getPingIcon(TEXTURE);
+                VertexConsumerProvider.Immediate buffer = mc.getBufferBuilders().getEntityVertexConsumers();
+                VertexConsumer vertexBuilder = buffer.getBuffer(pingType);
+
+                matrices.translate(pingX / 2, pingY / 2, 0);
+
+                float min = -8;
+                float max = 8;
+
+                // Ping Notice Background
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
+
+                // Ping Notice Icon
+                float alpha = 0.85F;
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, ping.getType().getMinU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, ping.getType().getMaxU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, ping.getType().getMaxU(), ping.getType().getMinV(), 1.0F, 1.0F, 1.0F, alpha);
+                VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, ping.getType().getMinU(), ping.getType().getMinV(), 1.0F, 1.0F, 1.0F, alpha);
+                buffer.draw(pingType);
+
+                matrices.translate(0, 0, 0);
+
+                matrices.pop();
             }
-            int width = mc.getWindow().getWidth();
-            int height = mc.getWindow().getHeight();
-
-            int x1 = -(width / 2) + 32;
-            int y1 = -(height / 2) + 32;
-            int x2 = (width / 2) - 32;
-            int y2 = (height / 2) - 32;
-
-            double pingX = ping.getScreenX();
-            double pingY = ping.getScreenY();
-
-            pingX -= width * 0.5D;
-            pingY -= height * 0.5D;
-
-            //TODO Fix that player rotation is not being taken into account. Been an issue since the creation of the mod
-            double angle = Math.atan2(pingY, pingX);
-            angle += (Math.toRadians(90));
-            double cos = Math.cos(angle);
-            double sin = Math.sin(angle);
-            double m = cos / sin;
-
-            if (cos > 0) {
-                pingX = y2 / m;
-                pingY = y2;
-            } else {
-                pingX = y1 / m;
-                pingY = y1;
-            }
-
-            if (pingX > x2) {
-                pingX = x2;
-                pingY = x2 * m;
-            } else if (pingX < x1) {
-                pingX = x1;
-                pingY = x1 * m;
-            }
-
-            pingX += width * 0.5D;
-            pingY += height * 0.5D;
-
-            MatrixStack matrixStack = new MatrixStack();
-            matrixStack.push();
-            MatrixStack.Entry matrixEntry = ((MatrixStackAccess) matrixStack).getStack().getLast();
-            Matrix4f matrix4f = matrixEntry.getModel();
-            RenderLayer pingType = PingRenderType.getPingIcon(TEXTURE);
-            VertexConsumerProvider.Immediate buffer = mc.getBufferBuilders().getEntityVertexConsumers();
-            VertexConsumer vertexBuilder = buffer.getBuffer(pingType);
-
-            matrixStack.translate(pingX / 2, pingY / 2, 0);
-
-            float min = -8;
-            float max = 8;
-
-            // Ping Notice Background
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
-
-            // Ping Notice Icon
-            float alpha = 0.85F;
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, ping.getType().getMinU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, ping.getType().getMaxU(), ping.getType().getMaxV(), 1.0F, 1.0F, 1.0F, alpha);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, ping.getType().getMaxU(), ping.getType().getMinV(), 1.0F, 1.0F, 1.0F, alpha);
-            VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, ping.getType().getMinU(), ping.getType().getMinV(), 1.0F, 1.0F, 1.0F, alpha);
-            buffer.draw(pingType);
-
-            matrixStack.translate(0, 0, 0);
-
-            matrixStack.pop();
         }
     }
 
     public void onClientTick() {
-        Iterator<PingWrapper> iterator = activePings.iterator();
+        Iterator<PingWrapper> iterator = this.activePings.iterator();
         while (iterator.hasNext()) {
             PingWrapper pingWrapper = iterator.next();
             if (pingWrapper.getAnimationTimer() > 0) {
@@ -229,7 +234,7 @@ public class PingHandler {
         matrixStack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(renderEntity.pitch));
         matrixStack.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(180.0F));
 
-        MatrixStack.Entry matrixEntry = ((MatrixStackAccess) matrixStack).getStack().getLast();
+        MatrixStack.Entry matrixEntry = matrixStack.peek();
         Matrix4f matrix4f = matrixEntry.getModel();
         VertexConsumerProvider.Immediate buffer = mc.getBufferBuilders().getEntityVertexConsumers();
         RenderLayer pingType = PingRenderType.getPingIcon(TEXTURE);
@@ -239,9 +244,6 @@ public class PingHandler {
         float max = 0.25F + (0.25F * (float) ping.getAnimationTimer() / 20F);
 
         // Block Overlay Background
-        /*int r = ping.getColor() >> 16 & 255;
-        int g = ping.getColor() >> 8 & 255;
-        int b = ping.getColor() & 255;*/
         VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, PingType.BACKGROUND.getMinU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
         VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMaxV(), 255, 255, 255, 255);
         VertexHelper.renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, PingType.BACKGROUND.getMaxU(), PingType.BACKGROUND.getMinV(), 255, 255, 255, 255);
@@ -271,7 +273,7 @@ public class PingHandler {
         matrixStack.pop();
     }
 
-    private void translatePingCoordinates(double px, double py, double pz, PingWrapper ping) {
+    private void translatePingCoordinates(double px, double py, double pz, BlockPingWrapper ping) {
         FloatBuffer screenCoords = BufferUtils.createFloatBuffer(4);
         IntBuffer viewport = BufferUtils.createIntBuffer(16);
         FloatBuffer modelView = BufferUtils.createFloatBuffer(16);
@@ -287,31 +289,27 @@ public class PingHandler {
         }
     }
 
-    public void sendPing(MinecraftClient client, PingType type) {
+    public void sendBlockPing(MinecraftClient client, PingType type) {
         Optional<Entity> optional = DebugRenderer.getTargetedEntity(client.cameraEntity, PingClientMod.config().GENERAL.pingAcceptDistance);
+        if (client.player == null) return;
         if (optional.isPresent()) {
-            sendPing(optional.get().getEntityId(), new Color(PingClientMod.config().VISUAL.pingR, PingClientMod.config().VISUAL.pingG, PingClientMod.config().VISUAL.pingB).getRGB(), type);
+            sendBlockPing(optional.get().getEntityId(), new Color(PingClientMod.config().VISUAL.pingR, PingClientMod.config().VISUAL.pingG, PingClientMod.config().VISUAL.pingB).getRGB(), type, client.player.getUuidAsString());
         } else {
-            if (client.player == null) return;
             BlockHitResult raycastResult = raycast(client.player, PingClientMod.config().GENERAL.pingAcceptDistance);
             if (raycastResult.getType() == HitResult.Type.BLOCK) {
-                sendPing(raycastResult, new Color(PingClientMod.config().VISUAL.pingR, PingClientMod.config().VISUAL.pingG, PingClientMod.config().VISUAL.pingB).getRGB(), type);
+                sendBlockPing(raycastResult, new Color(PingClientMod.config().VISUAL.pingR, PingClientMod.config().VISUAL.pingG, PingClientMod.config().VISUAL.pingB).getRGB(), type, client.player.getUuidAsString());
             }
         }
 
     }
 
-    private void sendPing(BlockHitResult raytrace, int color, PingType type) {
+    private void sendBlockPing(BlockHitResult raytrace, int color, PingType type, String uuid) {
         //todo: check if Block is already highlighted by the same player
-        if (ClientSidePacketRegistry.INSTANCE.canServerReceive(PingMod.getPacketHandler().PING_HIGHLIGHT_ID)) {
-            ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.getPacketHandler().PING_HIGHLIGHT_ID, new PingWrapper(raytrace.getBlockPos(), color, type).getPacketByteBuf());
-        }
+        ClientPlayNetworking.send(HighlightBlockPacket.IDENTIFIER, new BlockPingWrapper(raytrace.getBlockPos(), color, type, uuid).getPacketByteBuf());
     }
 
-    private void sendPing(int entityID, int color, PingType type) {
-        if (ClientSidePacketRegistry.INSTANCE.canServerReceive(PingMod.getPacketHandler().PING_HIGHLIGHT_ID)) {
-            ClientSidePacketRegistry.INSTANCE.sendToServer(PingMod.getPacketHandler().PING_HIGHLIGHT_ID, new PingWrapper(entityID, color, type).getPacketByteBuf());
-        }
+    private void sendBlockPing(int entityID, int color, PingType type, String uuid) {
+        ClientPlayNetworking.send(HighlightBlockPacket.IDENTIFIER, new EntityPingWrapper(entityID, color, type, uuid).getPacketByteBuf());
     }
 
     private BlockHitResult raycast(PlayerEntity player, double distance) {

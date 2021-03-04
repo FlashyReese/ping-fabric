@@ -8,7 +8,7 @@ public class PingMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        getPacketHandler().registerPacket();
+        getPacketHandler().registerC2SListeners();
     }
 
     public static PacketRegistry getPacketHandler() {

@@ -1,7 +1,7 @@
 package me.flashyreese.mods.ping.client.gui;
 
-import io.github.prospector.modmenu.api.ConfigScreenFactory;
-import io.github.prospector.modmenu.api.ModMenuApi;
+import com.terraformersmc.modmenu.api.ConfigScreenFactory;
+import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.flashyreese.mods.ping.client.PingClientMod;
 import me.flashyreese.mods.ping.client.config.PingClientConfig;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
